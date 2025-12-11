@@ -37,7 +37,7 @@ void Hunk_Begin(memhunk_t *hunk, size_t maxsize)
 
     // reserve a huge chunk of memory, but don't commit any yet
     hunk->cursize = 0;
-    hunk->maxsize = Q_ALIGN(maxsize, pagesize);
+    hunk->maxsize = Q_ALIGN(maxsize, (size_t)pagesize);
     hunk->base = VirtualAlloc(NULL, hunk->maxsize, MEM_RESERVE, PAGE_NOACCESS);
     if (!hunk->base)
         Com_Error(ERR_FATAL,
@@ -81,7 +81,7 @@ void Hunk_FreeToWatermark(memhunk_t *hunk, size_t size)
 {
     Q_assert(size <= hunk->cursize);
 
-    size_t newsize = Q_ALIGN(size, pagesize);
+    size_t newsize = Q_ALIGN(size, (size_t)pagesize);
     if (newsize < hunk->cursize) {
         Q_assert(hunk->base);
         Q_assert(newsize <= hunk->maxsize);
@@ -96,7 +96,7 @@ void Hunk_End(memhunk_t *hunk)
     Q_assert(hunk->cursize <= hunk->maxsize);
 
     // for statistics
-    hunk->mapped = Q_ALIGN(hunk->cursize, pagesize);
+    hunk->mapped = Q_ALIGN(hunk->cursize, (size_t)pagesize);
 }
 
 void Hunk_Free(memhunk_t *hunk)
