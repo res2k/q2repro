@@ -27,18 +27,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #if USE_ZLIB
 #include <zlib.h>
 
+#include "q2proto/q2proto_deflate_impl_helper.h"
+
 struct q2protoio_deflate_args_s
 {
-    /// Buffer to store deflated data
-    byte *z_buffer;
-    /// Size of deflated data buffer
-    unsigned z_buffer_size;
-    /// Deflate stream (raw)
-    z_stream z_raw;
-    /// Deflate stream (headered)
-    z_stream z_header;
-    /// Currently active stream
-    z_streamp z_current;
+    q2proto_deflate_impl_helper_args_t defl;
 };
 
 void Q2PROTO_deflate_args_init(q2protoio_deflate_args_t *deflate_args, byte *buffer, unsigned buffer_size, memtag_t z_stream_tag);
