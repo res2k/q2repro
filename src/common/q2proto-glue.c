@@ -268,16 +268,18 @@ q2proto_error_t q2protoio_deflate_begin(q2protoio_deflate_args_t* deflate_args, 
 
 #define DEFLATE_OUTPUT_MARGIN   16
 
-q2proto_error_t q2protoio_deflate_get_data(uintptr_t deflate_io_arg, size_t* in_size, const void **out, size_t *out_size)
+q2proto_error_t q2protoio_deflate_get_data(uintptr_t deflate_io_arg, q2proto_deflate_stream_mode_t stream_mode, size_t *in_size, const void **out, size_t *out_size)
 {
     q2protoio_ioarg_t *io_data = (q2protoio_ioarg_t *)deflate_io_arg;
     q2protoio_deflate_args_t *deflate_args = io_data->deflate;
 
     deflate_args->z_current->avail_in = msg_deflate.cursize - deflate_args->z_current->total_in;
-    int ret = deflate(deflate_args->z_current, Z_FINISH);
-    if (ret != Z_OK && ret != Z_STREAM_END) {
-        deflateEnd(deflate_args->z_current);
-        Com_Error(ERR_DROP, "%s: deflate() failed with error %d", __func__, ret);
+    if (deflate_args->z_current->avail_in > 0 || stream_mode != Q2P_DEFLATE_DATA_STREAM) {
+        int ret = deflate(deflate_args->z_current, stream_mode == Q2P_DEFLATE_DATA_STREAM ? Z_PARTIAL_FLUSH : Z_FINISH);
+        if (ret != Z_OK && ret != Z_STREAM_END) {
+            deflateEnd(deflate_args->z_current);
+            Com_Error(ERR_DROP, "%s: deflate() failed with error %d", __func__, ret);
+        }
     }
 
     if (in_size)
