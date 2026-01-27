@@ -171,6 +171,10 @@ void SV_CleanClient(client_t *client)
     // free packet entities
     Z_Freep(&client->entities);
     client->num_entities = 0;
+
+#if USE_ZLIB
+    Q2PROTO_deflate_args_destroy(&client->q2proto_deflate);
+#endif // USE_ZLIB
 }
 
 static void print_drop_reason(client_t *client, const char *reason, clstate_t oldstate)
@@ -1063,9 +1067,7 @@ static void SVC_DirectConnect(void)
     newcl->settings[CLS_FPS] = sv.framerate;
 #endif
 #if USE_ZLIB
-    newcl->q2proto_deflate.z_buffer = svs.z_buffer;
-    newcl->q2proto_deflate.z_buffer_size = svs.z_buffer_size;
-    newcl->q2proto_deflate.z_raw = &svs.z;
+    Q2PROTO_deflate_args_init(&newcl->q2proto_deflate, svs.z_buffer, svs.z_buffer_size, TAG_SERVER);
 #endif
 
     q2proto_error_t err = q2proto_init_servercontext(&newcl->q2proto_ctx, &svs.server_info, &parsed_connect);
@@ -2330,7 +2332,6 @@ void SV_Shutdown(const char *finalmsg, error_type_t type)
     // free server static data
     Z_Free(svs.client_pool);
 #if USE_ZLIB
-    deflateEnd(&svs.z);
     Z_Free(svs.z_buffer);
 #endif
     memset(&svs, 0, sizeof(svs));

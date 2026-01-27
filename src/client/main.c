@@ -3572,7 +3572,7 @@ void CL_Shutdown(void)
     CL_Disconnect(ERR_FATAL);
 
 #if USE_ZLIB
-    inflateEnd(&cls.z);
+    Q2PROTO_deflate_args_destroy(&cls.demo.q2proto_deflate);
     Z_Free(cls.demo.z_buffer);
 #endif
 

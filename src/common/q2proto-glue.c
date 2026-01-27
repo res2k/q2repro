@@ -194,6 +194,40 @@ q2proto_error_t q2protoio_inflate_end(uintptr_t inflate_io_arg)
     return msg_inflate.readcount < msg_inflate.cursize ? Q2P_ERR_MORE_DATA_DEFLATED : Q2P_ERR_SUCCESS;
 }
 
+static void* deflate_args_zalloc(voidpf opaque, uInt items, uInt size)
+{
+    return Z_TagMalloc((size_t)items * size, (memtag_t)opaque);
+}
+
+static void deflate_args_zfree(voidpf opaque, voidpf address)
+{
+    Z_Free(address);
+}
+
+void Q2PROTO_deflate_args_init(q2protoio_deflate_args_t *deflate_args, byte *buffer, unsigned buffer_size, memtag_t z_stream_tag)
+{
+    memset(deflate_args, 0, sizeof(*deflate_args));
+
+    deflate_args->z_header.opaque = (voidpf)z_stream_tag;
+    deflate_args->z_header.zalloc = deflate_args_zalloc;
+    deflate_args->z_header.zfree = deflate_args_zfree;
+
+    deflate_args->z_raw.opaque = (voidpf)z_stream_tag;
+    deflate_args->z_raw.zalloc = deflate_args_zalloc;
+    deflate_args->z_raw.zfree = deflate_args_zfree;
+
+    deflate_args->z_buffer = buffer;
+    deflate_args->z_buffer_size = buffer_size;
+}
+
+void Q2PROTO_deflate_args_destroy(q2protoio_deflate_args_t *deflate_args)
+{
+    if (deflate_args->z_header.state)
+        deflateEnd(&deflate_args->z_header);
+    if (deflate_args->z_raw.state)
+        deflateEnd(&deflate_args->z_raw);
+}
+
 static void reset_deflate_input(q2protoio_deflate_args_t* deflate_args)
 {
     deflate_args->z_current->next_in = (Byte*)deflate_buf;
@@ -203,24 +237,24 @@ static void reset_deflate_input(q2protoio_deflate_args_t* deflate_args)
     deflate_args->z_current->total_out = 0;
 }
 
+static void setup_deflate_stream(q2protoio_deflate_args_t* deflate_args, z_streamp stream, int window_bits)
+{
+    if (!stream->state)
+        Q_assert(deflateInit2(stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
+                    window_bits, 9, Z_DEFAULT_STRATEGY) == Z_OK);
+    else
+        deflateReset(stream);
+    deflate_args->z_current = stream;
+}
+
 q2proto_error_t q2protoio_deflate_begin(q2protoio_deflate_args_t* deflate_args, size_t max_deflated, q2proto_inflate_deflate_header_mode_t header_mode, uintptr_t *deflate_io_arg)
 {
     Q_assert(!deflate_q2protoio_ioarg.deflate);
 
     if (header_mode == Q2P_INFL_DEFL_RAW)
-    {
-        deflateReset(deflate_args->z_raw);
-        deflate_args->z_current = deflate_args->z_raw;
-    }
+        setup_deflate_stream(deflate_args, &deflate_args->z_raw, -MAX_WBITS);
     else
-    {
-        if (!deflate_args->z_header.state)
-            Q_assert(deflateInit2(&deflate_args->z_header, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
-                     MAX_WBITS, 9, Z_DEFAULT_STRATEGY) == Z_OK);
-        else
-            deflateReset(&deflate_args->z_header);
-        deflate_args->z_current = &deflate_args->z_header;
-    }
+        setup_deflate_stream(deflate_args, &deflate_args->z_header, MAX_WBITS);
     reset_deflate_input(deflate_args);
 
     SZ_InitWrite(&msg_deflate, deflate_buf, MAX_MSGLEN);

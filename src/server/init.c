@@ -471,11 +471,7 @@ void SV_InitGame(unsigned mvd_spawn)
     svs.client_pool = SV_Mallocz(sizeof(svs.client_pool[0]) * svs.maxclients);
 
 #if USE_ZLIB
-    svs.z.zalloc = SV_zalloc;
-    svs.z.zfree = SV_zfree;
-    Q_assert(deflateInit2(&svs.z, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
-             -MAX_WBITS, 9, Z_DEFAULT_STRATEGY) == Z_OK);
-    svs.z_buffer_size = ZPACKET_HEADER + deflateBound(&svs.z, MAX_MSGLEN) + 6 /* zlib header/footer */;
+    svs.z_buffer_size = ZPACKET_HEADER + deflateBound(NULL, MAX_MSGLEN) + 6 /* zlib header/footer */;
     svs.z_buffer = SV_Malloc(svs.z_buffer_size);
 #endif
 

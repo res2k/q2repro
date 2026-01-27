@@ -625,10 +625,9 @@ typedef struct {
         q2proto_server_info_t server_info;
         q2proto_servercontext_t q2proto_context;
 #if USE_ZLIB
-        z_stream        z;  // for compressing in demo snaps
         byte            *z_buffer;
         unsigned        z_buffer_size;
-        q2protoio_deflate_args_t q2proto_deflate;
+        q2protoio_deflate_args_t q2proto_deflate; // for compressing in demo snaps
 #endif
     } demo;
 

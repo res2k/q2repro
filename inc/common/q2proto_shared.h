@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "common/msg.h"
 #include "common/sizebuf.h"
+#include "common/zone.h"
 
 #include "q2proto/q2proto.h"
 
@@ -33,12 +34,15 @@ struct q2protoio_deflate_args_s
     /// Size of deflated data buffer
     unsigned z_buffer_size;
     /// Deflate stream (raw)
-    z_streamp z_raw;
+    z_stream z_raw;
     /// Deflate stream (headered)
     z_stream z_header;
     /// Currently active stream
     z_streamp z_current;
 };
+
+void Q2PROTO_deflate_args_init(q2protoio_deflate_args_t *deflate_args, byte *buffer, unsigned buffer_size, memtag_t z_stream_tag);
+void Q2PROTO_deflate_args_destroy(q2protoio_deflate_args_t *deflate_args);
 #endif // USE_ZLIB
 
 typedef struct q2protoio_ioarg_s {

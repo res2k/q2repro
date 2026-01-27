@@ -920,15 +920,11 @@ static void CL_PlayDemo_f(void)
 
 #if USE_ZLIB
     if (!cls.demo.z_buffer) {
-        Q_assert(deflateInit2(&cls.demo.z, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
-                -MAX_WBITS, 9, Z_DEFAULT_STRATEGY) == Z_OK);
-        cls.demo.z_buffer_size = deflateBound(&cls.demo.z, MAX_MSGLEN) + 6 /* zlib header/footer */;
+        cls.demo.z_buffer_size = deflateBound(NULL, MAX_MSGLEN) + 6 /* zlib header/footer */;
         cls.demo.z_buffer = Z_Malloc(cls.demo.z_buffer_size);
     }
 
-    cls.demo.q2proto_deflate.z_buffer = cls.demo.z_buffer;
-    cls.demo.q2proto_deflate.z_buffer_size = cls.demo.z_buffer_size;
-    cls.demo.q2proto_deflate.z_raw = &cls.demo.z;
+    Q2PROTO_deflate_args_init(&cls.demo.q2proto_deflate, cls.demo.z_buffer, cls.demo.z_buffer_size, TAG_GENERAL);
 #endif
 
     // read and parse messages util `precache' command

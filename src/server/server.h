@@ -469,8 +469,7 @@ typedef struct {
     client_t    *client_pool;       // [maxclients]
 
 #if USE_ZLIB
-    z_stream        z;  // for compressing messages at once
-    byte            *z_buffer;
+    byte            *z_buffer;      // buffer used when deflating messages to clients
     unsigned        z_buffer_size;
 #endif
 
