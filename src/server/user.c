@@ -1455,6 +1455,12 @@ void SV_ExecuteClientMessage(client_t *client)
         if (err == Q2P_ERR_NO_MORE_INPUT)
             break;
 
+        // Handle protocol errors from q2proto
+        if (err != Q2P_ERR_SUCCESS) {
+            SV_DropClient(client, va("bad client message (%s)", q2proto_error_string(err)));
+            break;
+        }
+
         // Handle batched userinfo deltas
         if (message.type != Q2P_CLC_USERINFO_DELTA && prevUserinfoUpdateCount != userinfoUpdateCount) {
             SV_UpdateUserinfo();
