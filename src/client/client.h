@@ -345,8 +345,10 @@ typedef struct {
     frametime_t frametime;
     float       frametime_inv;  // 1/frametime
 
-    configstring_t  baseconfigstrings[MAX_CONFIGSTRINGS];
-    configstring_t  configstrings[MAX_CONFIGSTRINGS];
+    configstring_t      baseconfigstrings[MAX_CONFIGSTRINGS];
+    configstring_ptr_t  configstrings[MAX_CONFIGSTRINGS];
+    char                configstring_mem[MAX_CONFIGSTRINGS * sizeof(configstring_t)];
+
     cs_remap_t      csr;
     q2proto_game_api_t game_api;
 
