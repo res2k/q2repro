@@ -1369,9 +1369,19 @@ void CL_ParseServerMessage(void)
             // it is very easy to overflow standard 1390 bytes
             // demo frame with modern servers... attempt to preserve
             // reliable messages at least, assuming they come first
+            bool written = false;
             if (cls.demo.buffer.cursize + len < cls.demo.buffer.maxsize) {
-                SZ_Write(&cls.demo.buffer, msg_read.data + readcount, len);
-            } else {
+                uint32_t old_size = cls.demo.buffer.cursize;
+                q2proto_error_t write_result = q2proto_server_write(&cls.demo.q2proto_context, Q2PROTO_IOARG_DEMO_WRITE, &svc_msg);
+                written = write_result == Q2P_ERR_SUCCESS;
+                if (!written) {
+                    Com_WPrintf("%s: failed to write message of type %s: %s\n", __func__, q2proto_svc_message_str(svc_msg.type), q2proto_error_string(write_result));
+                    // Roll back to previous message, in case of failure
+                    cls.demo.buffer.cursize = old_size;
+                    cls.demo.buffer.overflowed = false;
+                }
+            }
+            if(!written) {
                 cls.demo.others_dropped++;
             }
         }
