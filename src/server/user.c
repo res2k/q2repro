@@ -262,7 +262,7 @@ void SV_New_f(void)
     message.serverdata.q2pro.server_state = sv.state;
     message.serverdata.q2pro.qw_mode = sv_client->pmp.qwmode;
     message.serverdata.q2pro.waterjump_hack = sv_client->pmp.waterhack;
-    message.serverdata.q2repro.server_fps = SV_FRAMERATE;
+    message.serverdata.server_fps = SV_FRAMERATE;
 
     q2proto_server_write(&sv_client->q2proto_ctx, (uintptr_t)&sv_client->io_data, &message);
 

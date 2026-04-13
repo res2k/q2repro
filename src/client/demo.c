@@ -557,7 +557,7 @@ static void CL_Record_f(void)
     message_svcdata.serverdata.gamedir = q2proto_make_string(cl.gamedir);
     message_svcdata.serverdata.clientnum = cl.clientNum;
     message_svcdata.serverdata.levelname = q2proto_make_string(cl.configstrings[CS_NAME]);
-    message_svcdata.serverdata.q2repro.server_fps = cl.frametime_inv * 1000;
+    message_svcdata.serverdata.server_fps = cl.frametime_inv * 1000;
     q2proto_server_write(&cls.demo.q2proto_context, Q2PROTO_IOARG_DEMO_WRITE, &message_svcdata);
 
     q2proto_gamestate_t gamestate = {.num_configstrings = 0, .configstrings = configstrings, .num_spawnbaselines = 0, .spawnbaselines = spawnbaselines};

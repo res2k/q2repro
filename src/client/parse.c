@@ -733,7 +733,7 @@ static void CL_ParseServerData(const q2proto_svc_serverdata_t *serverdata)
         if (cl.game_api == Q2PROTO_GAME_Q2PRO_EXTENDED_V2)
             cl.psFlags |= MSG_PS_EXTENSIONS_2;
         cl.esFlags |= MSG_ES_RERELEASE | CL_ES_EXTENDED_MASK;
-        set_server_fps(serverdata->q2repro.server_fps);
+        set_server_fps(serverdata->server_fps);
         /* Rerelease game assumes client & server framerate is in sync,
          * non-rerelease games w/ variable FPS (eg OpenFFA) seem to assume
          * certain things still happen at 10Hz.
@@ -747,7 +747,7 @@ static void CL_ParseServerData(const q2proto_svc_serverdata_t *serverdata)
     } else if (cls.serverProtocol == PROTOCOL_VERSION_KEX_DEMOS || cls.serverProtocol == PROTOCOL_VERSION_KEX) {
         cl.game_api = cls.q2proto_ctx.features.server_game_api;
         cl.csr = cs_remap_rerelease;
-        set_server_fps(serverdata->kex.server_fps);
+        set_server_fps(serverdata->server_fps);
         cl.frametime.div = 1;
     } else {
         // Demo protocol, or vanilla
