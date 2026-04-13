@@ -595,7 +595,7 @@ static void CL_Record_f(void)
         baseline->entnum = ent->number;
         q2proto_packed_entity_state_t packed_entity;
         PackEntity(&cls.demo.q2proto_context, ent, &packed_entity);
-        Q2PROTO_MakeEntityDelta(&cls.demo.q2proto_context, &baseline->delta_state, NULL, &packed_entity, 0);
+        Q2PROTO_MakeEntityDelta(&cls.demo.q2proto_context, &baseline->delta_state, NULL, &packed_entity, MSG_ES_NEWENTITY);
     }
 
     q2protoio_deflate_args_t *deflate_args = NULL;
