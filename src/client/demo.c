@@ -518,6 +518,16 @@ static void CL_Record_f(void)
     }
     demo_q2protoio_ioarg.max_msg_len = size;
 
+#if USE_ZLIB
+    // Some protocols we might write support deflated packages in demos
+    if (!cls.demo.z_buffer) {
+        cls.demo.z_buffer_size = deflateBound(NULL, MAX_MSGLEN) + 6 /* zlib header/footer */;
+        cls.demo.z_buffer = Z_Malloc(cls.demo.z_buffer_size);
+    }
+
+    Q2PROTO_deflate_args_init(&cls.demo.q2proto_deflate, cls.demo.z_buffer, cls.demo.z_buffer_size, TAG_GENERAL);
+#endif
+
     //
     // open the demo file
     //
@@ -588,9 +598,13 @@ static void CL_Record_f(void)
         Q2PROTO_MakeEntityDelta(&cls.demo.q2proto_context, &baseline->delta_state, NULL, &packed_entity, 0);
     }
 
+    q2protoio_deflate_args_t *deflate_args = NULL;
+#if USE_ZLIB
+    deflate_args = &cls.demo.q2proto_deflate;
+#endif
     int write_result;
     do {
-        write_result = q2proto_server_write_gamestate(&cls.demo.q2proto_context, NULL, Q2PROTO_IOARG_DEMO_WRITE, &gamestate);;
+        write_result = q2proto_server_write_gamestate(&cls.demo.q2proto_context, deflate_args, Q2PROTO_IOARG_DEMO_WRITE, &gamestate);;
         CL_WriteDemoMessage(&cls.demo.buffer);
     } while (write_result == Q2P_ERR_NOT_ENOUGH_PACKET_SPACE);
 
