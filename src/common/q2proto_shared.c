@@ -27,10 +27,11 @@ bool Q2PROTO_MakeEntityDelta(q2proto_servercontext_t *context, q2proto_entity_st
     if (!from)
         from = &nullServerEntityState;
 
+    bool has_beam_old_origin_fix = context->features.has_beam_old_origin_fix;
     bool write_old_origin =
         ((flags & MSG_ES_NEWENTITY) && !VectorCompare(to->old_origin, from->origin))
         || ((to->renderfx & RF_FRAMELERP) && !VectorCompare(to->old_origin, from->origin))
-        || ((to->renderfx & RF_BEAM) && (!(flags & MSG_ES_BEAMORIGIN) || !VectorCompare(to->old_origin, from->old_origin)));
+        || ((to->renderfx & RF_BEAM) && (!has_beam_old_origin_fix || !VectorCompare(to->old_origin, from->old_origin)));
     q2proto_server_make_entity_state_delta(context, from, to, !(flags & MSG_ES_FIRSTPERSON) && write_old_origin, delta);
     if (flags & MSG_ES_FIRSTPERSON)
     {
