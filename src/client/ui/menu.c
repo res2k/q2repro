@@ -549,6 +549,8 @@ void SpinControl_Init(menuSpinControl_t *s)
     maxLength = 0;
     s->numItems = 0;
     n = s->itemnames;
+    if (!n)
+        return;
     while (*n) {
         length = strlen(*n);
 
