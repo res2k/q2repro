@@ -169,7 +169,7 @@ q2proto_error_t q2protoio_inflate_data(uintptr_t io_arg, uintptr_t inflate_io_ar
                                                            &uncompressed_size, &io_inflate.stream_end);
 
     SZ_InitRead(&msg_inflate, io_inflate.buffer, sizeof(io_inflate.buffer));
-    msg_inflate.cursize = sizeof(io_inflate.buffer) - uncompressed_size;
+    msg_inflate.cursize = uncompressed_size;
 
     return err;
 }
