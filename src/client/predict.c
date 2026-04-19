@@ -228,6 +228,18 @@ void CL_PredictMovement(void)
     }
 
     if (cls.demo.playback) {
+        // Run the cgame pmove to get correct screen blend & rdflags when eg underwater
+        memset(&pm, 0, sizeof(pm));
+        pm.trace = CL_PMTrace;
+        pm.clip = CL_Clip;
+        pm.pointcontents = CL_PointContents;
+        pm.s = cl.frame.ps.pmove;
+        VectorCopy(cl.frame.ps.viewoffset, pm.viewoffset);
+        pm.snapinitial = qtrue;
+        cgame->Pmove(&pm);
+
+        Vector4Copy(pm.screen_blend, cl.predicted_screen_blend);
+        cl.predicted_rdflags = pm.rdflags;
         return;
     }
 
