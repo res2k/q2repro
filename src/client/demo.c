@@ -28,6 +28,7 @@ static cvar_t   *cl_demosnaps;
 static cvar_t   *cl_demomsglen;
 static cvar_t   *cl_demowait;
 static cvar_t   *cl_demosuspendtoggle;
+static cvar_t   *cl_demo_protocol_kex;
 
 q2protoio_ioarg_t demo_q2protoio_ioarg = {.sz_write = &cls.demo.buffer};
 
@@ -511,7 +512,10 @@ static void CL_Record_f(void)
     cls.demo.server_info.game_api = cls.q2proto_ctx.features.server_game_api;
     cls.demo.server_info.default_packet_length = size;
 
-    q2proto_error_t err = q2proto_init_servercontext_demo(&cls.demo.q2proto_context, &cls.demo.server_info, &size);
+    q2proto_protocol_t demo_protocol = Q2P_PROTOCOL_INVALID;
+    if (cls.demo.server_info.game_api == Q2PROTO_GAME_RERELEASE && cl_demo_protocol_kex->value == 0)
+        demo_protocol = Q2P_PROTOCOL_Q2REPRO;
+    q2proto_error_t err = q2proto_init_servercontext_demo(&cls.demo.q2proto_context, demo_protocol, &cls.demo.server_info, &size);
     if (err != Q2P_ERR_SUCCESS) {
         Com_EPrintf("Failed to start demo recording: %s.\n", q2proto_error_string(err));
         return;
@@ -1574,6 +1578,7 @@ void CL_InitDemos(void)
     cl_demomsglen = Cvar_Get("cl_demomsglen", va("%d", MAX_PACKETLEN_WRITABLE_DEFAULT), 0);
     cl_demowait = Cvar_Get("cl_demowait", "0", 0);
     cl_demosuspendtoggle = Cvar_Get("cl_demosuspendtoggle", "1", 0);
+    cl_demo_protocol_kex = Cvar_Get("cl_demo_protocol_kex", "1", 0);
 
     Cmd_Register(c_demo);
 }
