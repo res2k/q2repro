@@ -359,6 +359,7 @@ if cc.get_argument_syntax() == 'gcc'
     '-fno-math-errno',
     '-fno-trapping-math',
     '-fsigned-char',
+    '-Wno-nontrivial-memcall', # rerelease-game uses memset() on "non-trivial" C++ structs
   ]
 
   common_args += cc.get_supported_arguments(test_args)
