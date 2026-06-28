@@ -124,13 +124,12 @@ SCR_DrawStringMultiStretch
 void SCR_DrawStringMultiStretch(int x, int y, int scale, int flags, size_t maxlen,
                                 const char *s, color_t color, qhandle_t font)
 {
-    char    *p;
     size_t  len;
     int     last_x = x;
     int     last_y = y;
 
     while (*s && maxlen) {
-        p = strchr(s, '\n');
+        const char* p = strchr(s, '\n');
         if (!p) {
             last_x = SCR_DrawStringStretch(x, y, scale, flags, maxlen, s, color, font);
             last_y = y;

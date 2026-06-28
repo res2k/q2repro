@@ -136,11 +136,10 @@ DrawStringMulti
 */
 static void CG_DrawStringMulti(int x, int y, int flags, size_t maxlen, const char *s, color_t color)
 {
-    char    *p;
     size_t  len;
 
     while (*s) {
-        p = strchr(s, '\n');
+        const char* p = strchr(s, '\n');
         if (!p) {
             CG_DrawStringEx(x, y, flags, maxlen, s, color);
             break;
