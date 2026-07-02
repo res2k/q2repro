@@ -70,7 +70,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-mingw-w64 g++-mingw-w64 nasm meson ninja-build
+          sudo apt-get install -y gcc-mingw-w64 g++-mingw-w64 nasm ninja-build
+          python -m pip install "meson>=1.10"
 
       - name: Build - meson setup
         run: |
@@ -150,10 +151,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson libsdl2-dev libopenal-dev \
+          sudo apt-get install -y ninja-build libsdl2-dev libopenal-dev \
           libpng-dev libjpeg-dev zlib1g-dev mesa-common-dev \
           libcurl4-gnutls-dev libx11-dev libxi-dev \
           libwayland-dev wayland-protocols libdecor-0-dev
+          python -m pip install "meson>=1.10"
 
       - name: Build - meson setup
         run: |
