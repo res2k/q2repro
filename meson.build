@@ -380,6 +380,15 @@ elif cc.get_id() == 'msvc'
   common_args += ['/wd4146', '/wd4244', '/wd4305', '/D_CRT_SECURE_NO_WARNINGS', '/wd4267', '/wd4018']
 endif
 
+# MacOS linker warning fix taken from ffmpeg meson wrapper
+if host_machine.system() in ['darwin', 'ios']
+  # Xcode Clang doesn't default to -fno-common while upstream llvm.org
+  # Clang (and GCC) do. This avoids linker warnings on Xcode 16.3 about
+  # "reducing alignment of section __DATA,__common from 0x8000 to 0x4000
+  # because it exceeds segment maximum alignment".
+  common_args += cc.get_supported_arguments('-fno-common')
+endif
+
 add_project_arguments(common_args, language: 'c')
 add_project_link_arguments(common_link_args, language: 'c')
 
