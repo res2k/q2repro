@@ -55,6 +55,8 @@ static cvar_t    *m_side;
 static cvar_t    *cl_joywheelspeed;
 static cvar_t    *cl_wheel_look_cooldown;
 
+bool joy_altmodifier_pressed = false;
+
 /*
 ===============================================================================
 
@@ -463,6 +465,16 @@ static void IN_WeapPrev(void)
     CL_Wheel_WeapPrev();
 }
 
+static void IN_JoyAltModifierDown(void)
+{
+    joy_altmodifier_pressed = true;
+}
+
+static void IN_JoyAltModifierUp(void)
+{
+    joy_altmodifier_pressed = false;
+}
+
 /*
 ===============
 CL_KeyState
@@ -789,6 +801,9 @@ static const cmdreg_t c_input[] = {
     { "-wheel2", IN_Wheel2Up },
     { "cl_weapnext", IN_WeapNext },
     { "cl_weapprev", IN_WeapPrev },
+    // Gamepad inpuf stuff
+    { "+altmodifier", IN_JoyAltModifierDown },
+    { "-altmodifier", IN_JoyAltModifierUp },
     { NULL }
 };
 

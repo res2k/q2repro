@@ -157,6 +157,30 @@ static const keyname_t keynames[] = {
     K(PAD_VIEW),
     K(PAD_MENU),
 
+    K(LEFT_STICK_ALT),
+    K(RIGHT_STICK_ALT),
+    K(LEFT_SHOULDER_ALT),
+    K(RIGHT_SHOULDER_ALT),
+    K(DPAD_UP_ALT),
+    K(DPAD_DOWN_ALT),
+    K(DPAD_LEFT_ALT),
+    K(DPAD_RIGHT_ALT),
+    K(A_BUTTON_ALT),
+    K(B_BUTTON_ALT),
+    K(X_BUTTON_ALT),
+    K(Y_BUTTON_ALT),
+    K(LEFT_TRIGGER_ALT),
+    K(RIGHT_TRIGGER_ALT),
+    K(MISC1_ALT),
+    K(LEFT_PADDLE1_ALT),
+    K(RIGHT_PADDLE1_ALT),
+    K(LEFT_PADDLE2_ALT),
+    K(RIGHT_PADDLE2_ALT),
+    K(TOUCHPAD_ALT),
+    K(MISC2_ALT),
+    K(PAD_VIEW_ALT),
+    K(PAD_MENU_ALT),
+
     {NULL, 0}
 };
 

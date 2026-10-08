@@ -49,6 +49,8 @@ static cvar_t            *cl_joyinvertturn;   // Look axis X invert
 static cvar_t            *cl_joyinvertstrafe; // Move axis X invert
 static cvar_t            *cl_joyinvertmove;   // Move axis Y invert
 
+extern bool               joy_altmodifier_pressed;
+
 typedef struct axisstate_s {
     float value[SDL_GAMEPAD_AXIS_COUNT]; // normalized to +-1
 } gamepad_axisstate_t;
@@ -69,6 +71,8 @@ static struct {
     gamepad_axisstate_t axisstate;
 
     unsigned            emulatedkeytimer[6];
+
+    int                 reported_key[_NUM_KEY_CODES];
 } gamepad;
 
 static void in_joystick_changed(cvar_t *cvar)
@@ -95,6 +99,7 @@ static void init_gamepad_state(void)
 
     memset(&gamepad.axisstate, 0, sizeof(gamepad.axisstate));
     memset(&gamepad.emulatedkeytimer, 0, sizeof(gamepad.emulatedkeytimer));
+    memset(&gamepad.reported_key, 0, sizeof(gamepad.reported_key));
 }
 
 void Gamepad_Init(void)
@@ -245,6 +250,12 @@ static void IN_JoyKeyEvent(bool wasdown, bool isdown, int key, unsigned *timer)
     const unsigned currenttime = com_localTime3;
 
     if (wasdown) {
+        // alt modifier may mean a different key code was sent, fetch that...
+        int realkey = key;
+        key = gamepad.reported_key[key];
+        if (!key)
+            key = realkey; // shouldn't really happen...
+
         if (isdown) {
             if (currenttime >= *timer) {
                 *timer = currenttime + 100;
@@ -253,9 +264,18 @@ static void IN_JoyKeyEvent(bool wasdown, bool isdown, int key, unsigned *timer)
         } else {
             *timer = 0;
             Key_Event(key, false, currenttime);
+
+            // Clear any translation due to the alt modifier
+            gamepad.reported_key[realkey] = 0;
         }
     } else {
         if (isdown) {
+            // When pressing down a button, apply the alt modifier if pressed, and record what key we emitted
+            int realkey = key;
+            if (joy_altmodifier_pressed && key >= K_GAMEPAD_FIRST && key < K_GAMEPAD_ALT_FIRST)
+                key += K_GAMEPAD_ALT_FIRST - K_GAMEPAD_FIRST;
+            gamepad.reported_key[realkey] = key;
+
             *timer = currenttime + 500;
             Key_Event(key, true, currenttime);
         }
