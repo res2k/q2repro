@@ -114,7 +114,33 @@ typedef enum
     K_MWHEELLEFT,
     K_MOUSELAST,
 
-    _NUM_KEY_CODES = 256
+    // SDL game controller keys
+    K_GAMEPAD_FIRST = 300,
+    K_LEFT_STICK = K_GAMEPAD_FIRST,
+    K_RIGHT_STICK,
+    K_LEFT_SHOULDER,
+    K_RIGHT_SHOULDER,
+    K_DPAD_UP,
+    K_DPAD_DOWN,
+    K_DPAD_LEFT,
+    K_DPAD_RIGHT,
+    K_A_BUTTON,
+    K_B_BUTTON,
+    K_X_BUTTON,
+    K_Y_BUTTON,
+    K_LEFT_TRIGGER,
+    K_RIGHT_TRIGGER,
+    K_MISC1,
+    K_RIGHT_PADDLE1,
+    K_LEFT_PADDLE1,
+    K_RIGHT_PADDLE2,
+    K_LEFT_PADDLE2,
+    K_TOUCHPAD,
+    K_MISC2,
+    K_PAD_VIEW,
+    K_PAD_MENU,
+
+    _NUM_KEY_CODES
 } keycode_t;
 
 typedef enum {

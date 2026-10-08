@@ -133,6 +133,30 @@ static const keyname_t keynames[] = {
 
     {"SEMICOLON", ';'}, // because a raw semicolon separates commands
 
+    K(LEFT_STICK),
+    K(RIGHT_STICK),
+    K(LEFT_SHOULDER),
+    K(RIGHT_SHOULDER),
+    K(DPAD_UP),
+    K(DPAD_DOWN),
+    K(DPAD_LEFT),
+    K(DPAD_RIGHT),
+    K(A_BUTTON),
+    K(B_BUTTON),
+    K(X_BUTTON),
+    K(Y_BUTTON),
+    K(LEFT_TRIGGER),
+    K(RIGHT_TRIGGER),
+    K(MISC1),
+    K(LEFT_PADDLE1),
+    K(RIGHT_PADDLE1),
+    K(LEFT_PADDLE2),
+    K(RIGHT_PADDLE2),
+    K(TOUCHPAD),
+    K(MISC2),
+    K(PAD_VIEW),
+    K(PAD_MENU),
+
     {NULL, 0}
 };
 
