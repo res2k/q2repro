@@ -43,6 +43,7 @@ static cvar_t            *joy_sensitivity_pitch;
 static cvar_t            *joy_invert;
 static cvar_t            *joy_exponent;
 static cvar_t            *joy_exponent_move;
+static cvar_t            *joy_swapmovelook;
 
 static cvar_t            *cl_joyinvertturn;   // Look axis X invert
 static cvar_t            *cl_joyinvertstrafe; // Move axis X invert
@@ -111,6 +112,7 @@ void Gamepad_Init(void)
     joy_deadzone_trigger = Cvar_Get("joy_deadzone_trigger", "0.2", CVAR_ARCHIVE);
     joy_exponent = Cvar_Get("joy_exponent", "2", CVAR_ARCHIVE);
     joy_exponent_move = Cvar_Get("joy_exponent_move", "2", CVAR_ARCHIVE);
+    joy_swapmovelook = Cvar_Get("joy_swapmovelook", "0", CVAR_ARCHIVE);
 
     cl_joyinvertturn = Cvar_Get("cl_joyinvertturn", "0", CVAR_ARCHIVE);
     cl_joyinvertstrafe = Cvar_Get("cl_joyinvertstrafe", "0", CVAR_ARCHIVE);
@@ -409,6 +411,12 @@ bool Gamepad_GetMoveLook(gamepad_2dinput_t *move, gamepad_2dinput_t *look)
     moveRaw.y = gamepad.axisstate.value[SDL_GAMEPAD_AXIS_LEFTY];
     lookRaw.x = gamepad.axisstate.value[SDL_GAMEPAD_AXIS_RIGHTX];
     lookRaw.y = gamepad.axisstate.value[SDL_GAMEPAD_AXIS_RIGHTY];
+
+    if (joy_swapmovelook->integer) {
+        const gamepad_2dinput_t temp = moveRaw;
+        moveRaw = lookRaw;
+        lookRaw = temp;
+    }
 
     moveDeadzone = IN_ApplyDeadzone(moveRaw, joy_deadzone_move->value, joy_outer_threshold_move->value);
     lookDeadzone = IN_ApplyDeadzone(lookRaw, joy_deadzone_look->value, joy_outer_threshold_look->value);
