@@ -1297,15 +1297,18 @@ static menuSound_t MenuList_Key(menuList_t *l, int key)
 
     switch (key) {
     case K_LEFTARROW:
+    case K_DPAD_LEFT:
     case 'h':
         return MenuList_PrevColumn(l);
 
     case K_RIGHTARROW:
+    case K_DPAD_RIGHT:
     case 'l':
         return MenuList_NextColumn(l);
 
     case K_UPARROW:
     case K_KP_UPARROW:
+    case K_DPAD_UP:
     case 'k':
         if (l->curvalue < 0) {
             goto home;
@@ -1322,6 +1325,7 @@ static menuSound_t MenuList_Key(menuList_t *l, int key)
 
     case K_DOWNARROW:
     case K_KP_DOWNARROW:
+    case K_DPAD_DOWN:
     case 'j':
         if (l->curvalue < 0) {
             goto home;
@@ -1417,6 +1421,7 @@ static menuSound_t MenuList_Key(menuList_t *l, int key)
     case K_MOUSE1:
     //case K_MOUSE2:
     //case K_MOUSE3:
+    case K_A_BUTTON:
         return MenuList_Click(l);
     }
 
@@ -2517,16 +2522,19 @@ static menuSound_t Menu_DefaultKey(menuFrameWork_t *m, int key)
     switch (key) {
     case K_ESCAPE:
     case K_MOUSE2:
+    case K_B_BUTTON:
         UI_PopMenu();
         return QMS_OUT;
 
     case K_KP_UPARROW:
     case K_UPARROW:
+    case K_DPAD_UP:
     case 'k':
         return Menu_AdjustCursor(m, -1);
 
     case K_KP_DOWNARROW:
     case K_DOWNARROW:
+    case K_DPAD_DOWN:
     case K_TAB:
     case 'j':
         return Menu_AdjustCursor(m, 1);
@@ -2534,12 +2542,14 @@ static menuSound_t Menu_DefaultKey(menuFrameWork_t *m, int key)
     case K_KP_LEFTARROW:
     case K_LEFTARROW:
     case K_MWHEELDOWN:
+    case K_DPAD_LEFT:
     case 'h':
         return Menu_SlideItem(m, -1);
 
     case K_KP_RIGHTARROW:
     case K_RIGHTARROW:
     case K_MWHEELUP:
+    case K_DPAD_RIGHT:
     case 'l':
         return Menu_SlideItem(m, 1);
 
@@ -2558,6 +2568,7 @@ static menuSound_t Menu_DefaultKey(menuFrameWork_t *m, int key)
 
     case K_KP_ENTER:
     case K_ENTER:
+    case K_A_BUTTON:
         return Menu_SelectItem(m);
     }
 

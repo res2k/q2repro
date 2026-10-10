@@ -1207,7 +1207,7 @@ void Key_Console(int key)
         return;
     }
 
-    if (key == K_ENTER || key == K_KP_ENTER) {
+    if (key == K_ENTER || key == K_KP_ENTER || key == K_A_BUTTON) {
         Con_Action();
         goto scroll;
     }
@@ -1251,12 +1251,12 @@ void Key_Console(int key)
         return;
     }
 
-    if (key == K_UPARROW || (key == 'p' && Key_IsDown(K_CTRL))) {
+    if (key == K_UPARROW || key == K_DPAD_UP || (key == 'p' && Key_IsDown(K_CTRL))) {
         Prompt_HistoryUp(&con.prompt);
         goto scroll;
     }
 
-    if (key == K_DOWNARROW || (key == 'n' && Key_IsDown(K_CTRL))) {
+    if (key == K_DOWNARROW || key == K_DPAD_DOWN || (key == 'n' && Key_IsDown(K_CTRL))) {
         Prompt_HistoryDown(&con.prompt);
         goto scroll;
     }

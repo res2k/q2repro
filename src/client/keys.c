@@ -585,6 +585,10 @@ void Key_Init(void)
     K(MWHEELUP);
     K(MWHEELDOWN);
 
+    K(DPAD_UP);
+    K(DPAD_DOWN);
+    K(A_BUTTON);
+
 #undef K
 
 //
@@ -671,7 +675,7 @@ void Key_Event(unsigned key, bool down, unsigned time)
     }
 
     // menu key is hardcoded, so the user can never unbind it
-    if (key == K_ESCAPE) {
+    if (key == K_ESCAPE || key == K_PAD_MENU) {
         if (!down) {
             return;
         }
