@@ -113,6 +113,8 @@ typedef enum
     K_MWHEELRIGHT,
     K_MWHEELLEFT,
     K_MOUSELAST,
+
+    _NUM_KEY_CODES = 256
 } keycode_t;
 
 typedef enum {

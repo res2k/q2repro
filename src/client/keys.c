@@ -21,22 +21,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 static keywaitcb_t  key_wait_cb;
 static void         *key_wait_arg;
 
-static char     *keybindings[256];
+static char     *keybindings[_NUM_KEY_CODES];
 
 // bitmap of keys not passed to interpreter while in console
-static byte     consolekeys[256 / 8];
+static size_t   consolekeys[BC_COUNT(_NUM_KEY_CODES)];
 
 // key to map to if shift held down in console
-static byte     keyshift[256];
+static byte     keyshift[_NUM_KEY_CODES];
 
 // key down status: if > 1, it is auto-repeating
-static byte     keydown[256];
+static byte     keydown[_NUM_KEY_CODES];
 
 // number of keys down for BUTTON_ANY
 static int      anykeydown;
 
 // bitmap for generating button up commands
-static byte     buttondown[256 / 8];
+static size_t   buttondown[BC_COUNT(_NUM_KEY_CODES)];
 
 static bool     key_overstrike;
 
@@ -207,7 +207,7 @@ Returns key down status: if > 1, it is auto-repeating
 */
 int Key_IsDown(int key)
 {
-    if (key < 0 || key > 255) {
+    if (key < 0 || key >= _NUM_KEY_CODES) {
         return 0;
     }
 
@@ -293,7 +293,7 @@ const char *Key_GetBinding(const char *binding)
 {
     int key;
 
-    for (key = 0; key < 256; key++) {
+    for (key = 0; key < _NUM_KEY_CODES; key++) {
         if (keybindings[key]) {
             if (!Q_stricmp(keybindings[key], binding)) {
                 return Key_KeynumToString(key);
@@ -314,7 +314,7 @@ int Key_EnumBindings(int key, const char *binding)
     if (key < 0) {
         key = 0;
     }
-    for (; key < 256; key++) {
+    for (; key < _NUM_KEY_CODES; key++) {
         if (keybindings[key]) {
             if (!Q_stricmp(keybindings[key], binding)) {
                 return key;
@@ -332,7 +332,7 @@ Key_SetBinding
 */
 void Key_SetBinding(int keynum, const char *binding)
 {
-    if (keynum < 0 || keynum > 255)
+    if (keynum < 0 || keynum >= _NUM_KEY_CODES)
         return;
 
 // free old binding
@@ -356,7 +356,7 @@ static void Key_Bound_g(genctx_t *ctx)
     int i;
 
     ctx->ignorecase = true;
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < _NUM_KEY_CODES; i++)
         if (keybindings[i])
             Prompt_AddMatch(ctx, Key_KeynumToString(i));
 }
@@ -409,7 +409,7 @@ static void Key_Unbindall_f(void)
 {
     int     i;
 
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < _NUM_KEY_CODES; i++)
         if (keybindings[i])
             Key_SetBinding(i, NULL);
 }
@@ -459,7 +459,7 @@ void Key_WriteBindings(qhandle_t f)
 {
     int     i;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < _NUM_KEY_CODES; i++) {
         if (keybindings[i] && keybindings[i][0]) {
             FS_FPrintf(f, "bind %s \"%s\"\n", Key_KeynumToString(i),
                        keybindings[i]);
@@ -478,7 +478,7 @@ static void Key_Bindlist_f(void)
 {
     int     i;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < _NUM_KEY_CODES; i++) {
         if (keybindings[i] && keybindings[i][0]) {
             Com_Printf("%s \"%s\"\n", Key_KeynumToString(i),
                        keybindings[i]);
@@ -566,7 +566,7 @@ void Key_Init(void)
 //
 // init ascii keyshift characters
 //
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < _NUM_KEY_CODES; i++)
         keyshift[i] = i;
     for (i = 'a'; i <= 'z'; i++)
         keyshift[i] = i - 'a' + 'A';
@@ -612,7 +612,7 @@ void Key_Event(unsigned key, bool down, unsigned time)
     char    *kb;
     char    cmd[MAX_STRING_CHARS];
 
-    Q_assert(key < 256);
+    Q_assert(key < _NUM_KEY_CODES);
 
     Com_DDDPrintf("%u: %c%s\n", time,
                   down ? '+' : '-', Key_KeynumToString(key));
@@ -881,7 +881,7 @@ void Key_ClearStates(void)
         key_wait_cb = NULL;
     }
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < _NUM_KEY_CODES; i++) {
         if (keydown[i])
             Key_Event(i, false, com_eventTime);
     }
