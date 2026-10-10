@@ -433,9 +433,13 @@ endif
 
 sdl3 = dependency('sdl3', required: get_option('sdl3'))
 if sdl3.found()
+  client_src += 'src/client/gamepad_sdl.c'
   client_src += 'src/unix/video/sdl.c'
   config.set('USE_SDL', 'USE_CLIENT')
+else
+  config.set('USE_SDL', '0')
 endif
+config.set('USE_GAMEPAD', 'USE_SDL')
 
 common_deps = [zlib]
 client_deps = [png, curl, sdl3]
@@ -760,6 +764,7 @@ summary({
   'debug'              : config.get('USE_DEBUG', 0) != 0,
   'game-abi-hack'      : config.get('USE_GAME_ABI_HACK', 0) != 0,
   'game-new-api'       : config.get('USE_NEW_GAME_API', 0) != 0,
+  'gamepad'            : config.get('USE_GAMEPAD', '') != '',
   'icmp-errors'        : config.get('USE_ICMP', 0) != 0,
   'libcurl'            : config.get('USE_CURL', 0) != 0,
   'libjpeg'            : config.get('USE_JPG', 0) != 0,

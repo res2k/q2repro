@@ -135,6 +135,7 @@ void IN_Frame(void)
     if (input.modified) {
         IN_Restart_f();
     }
+    Gamepad_Frame();
 }
 
 /*
@@ -163,6 +164,8 @@ void IN_Shutdown(void)
     if (vid && vid->shutdown_mouse) {
         vid->shutdown_mouse();
     }
+
+    Gamepad_Shutdown();
 
     memset(&input, 0, sizeof(input));
 }
@@ -198,6 +201,8 @@ void IN_Init(void)
 
     in_grab = Cvar_Get("in_grab", "1", 0);
     in_grab->changed = in_changed_soft;
+
+    Gamepad_Init();
 
     IN_Activate();
 }
@@ -483,6 +488,22 @@ static float CL_KeyState(const kbutton_t *key)
 
 //==========================================================================
 
+static void CL_GamepadMove(int msec)
+{
+    gamepad_2dinput_t move, look;
+    if (!Gamepad_GetMoveLook(&move, &look))
+        return;
+
+    // FIXME: Weapons wheel input
+
+    cl.mousemove[1] += cl_sidespeed->value * move.x;
+    cl.mousemove[0] -= cl_forwardspeed->value * move.y;
+
+    float speed = msec * 0.001f;
+    cl.viewangles[YAW] -= look.x * speed;
+    cl.viewangles[PITCH] += look.y * speed;
+}
+
 static float autosens_x;
 static float autosens_y;
 
@@ -667,7 +688,8 @@ void CL_UpdateCmd(int msec)
     if (in_down.state & 3)
         cl.cmd.buttons |= BUTTON_CROUCH;
 
-    // allow mice to add to the move
+    // allow gamepad, mice to add to the move
+    CL_GamepadMove(msec);
     CL_MouseMove();
 
     // add accumulated mouse forward/side movement

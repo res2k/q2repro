@@ -40,6 +40,9 @@ static const char *Com_GetFeatures(void)
 #if USE_GAME_ABI_HACK
     "game-abi-hack "
 #endif
+#if USE_GAMEPAD
+    "gamepad "
+#endif
 #if USE_ICMP
     "icmp-errors "
 #endif
