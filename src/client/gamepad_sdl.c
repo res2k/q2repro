@@ -399,13 +399,13 @@ static gamepad_2dinput_t IN_ApplyDeadzone(const gamepad_2dinput_t axis, float de
     return result;
 }
 
-bool Gamepad_GetMoveLook(gamepad_2dinput_t *move, gamepad_2dinput_t *look)
+static bool get_raw_movelook(gamepad_2dinput_t *move, gamepad_2dinput_t *look)
 {
     if (!gamepad.ptr)
         return false;
 
-    gamepad_2dinput_t moveRaw, moveDeadzone, moveEased;
-    gamepad_2dinput_t lookRaw, lookDeadzone, lookEased;
+    gamepad_2dinput_t moveRaw, moveDeadzone;
+    gamepad_2dinput_t lookRaw, lookDeadzone;
 
     moveRaw.x = gamepad.axisstate.value[SDL_GAMEPAD_AXIS_LEFTX];
     moveRaw.y = gamepad.axisstate.value[SDL_GAMEPAD_AXIS_LEFTY];
@@ -421,8 +421,18 @@ bool Gamepad_GetMoveLook(gamepad_2dinput_t *move, gamepad_2dinput_t *look)
     moveDeadzone = IN_ApplyDeadzone(moveRaw, joy_deadzone_move->value, joy_outer_threshold_move->value);
     lookDeadzone = IN_ApplyDeadzone(lookRaw, joy_deadzone_look->value, joy_outer_threshold_look->value);
 
-    moveEased = IN_ApplyEasing(moveDeadzone, joy_exponent_move->value);
-    lookEased = IN_ApplyEasing(lookDeadzone, joy_exponent->value);
+    *move = IN_ApplyEasing(moveDeadzone, joy_exponent_move->value);
+    *look = IN_ApplyEasing(lookDeadzone, joy_exponent->value);
+
+    return true;
+}
+
+bool Gamepad_GetMoveLook(gamepad_2dinput_t *move, gamepad_2dinput_t *look)
+{
+    gamepad_2dinput_t moveEased, lookEased;
+
+    if (!get_raw_movelook(&moveEased, &lookEased))
+        return false;
 
     if (cl_joyinvertmove->integer)
         moveEased.y = -moveEased.y;
@@ -439,6 +449,16 @@ bool Gamepad_GetMoveLook(gamepad_2dinput_t *move, gamepad_2dinput_t *look)
 
     *move = moveEased;
     *look = lookEased;
+
+    return true;
+}
+
+bool Gamepad_GetWheelLook(gamepad_2dinput_t *look)
+{
+    gamepad_2dinput_t moveEased;
+
+    if (!get_raw_movelook(&moveEased, look))
+        return false;
 
     return true;
 }

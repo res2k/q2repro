@@ -940,6 +940,7 @@ typedef enum {
 } cl_wheel_close_reason_t;
 void CL_Wheel_Close(cl_wheel_close_reason_t reason);
 void CL_Wheel_Input(int x, int y);
+void CL_Wheel_InputStick(float x, float y);
 void CL_Wheel_Draw(void);
 void CL_Wheel_Update(void);
 void CL_Wheel_ClearInput(void);

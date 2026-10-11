@@ -52,6 +52,9 @@ static cvar_t    *m_yaw;
 static cvar_t    *m_forward;
 static cvar_t    *m_side;
 
+static cvar_t    *cl_joywheelspeed;
+static cvar_t    *cl_wheel_look_cooldown;
+
 /*
 ===============================================================================
 
@@ -488,20 +491,42 @@ static float CL_KeyState(const kbutton_t *key)
 
 //==========================================================================
 
+/* A "cooldown" is applied after using a wheel so the look direction doesn't
+ * immediately slam into some direction from the wheel use.
+ * Should provide a reasonable time for the use to release the look stick
+ * after closing the wheel. Default is 0.5s. */
+static unsigned wheel_look_cooldown;
+
 static void CL_GamepadMove(int msec)
 {
     gamepad_2dinput_t move, look;
+
+    unsigned now = com_localTime3;
+
+    // send "look" input to wheel
+    if (cl.wheel.state == WHEEL_OPEN) {
+        if (!Gamepad_GetWheelLook(&look))
+            return;
+
+        CL_Wheel_InputStick(look.x, look.y);
+        wheel_look_cooldown = now + cl_wheel_look_cooldown->value * 1000;
+        return;
+    }
+
     if (!Gamepad_GetMoveLook(&move, &look))
         return;
-
-    // FIXME: Weapons wheel input
 
     cl.mousemove[1] += cl_sidespeed->value * move.x;
     cl.mousemove[0] -= cl_forwardspeed->value * move.y;
 
-    float speed = msec * 0.001f;
-    cl.viewangles[YAW] -= look.x * speed;
-    cl.viewangles[PITCH] += look.y * speed;
+    if (now >= wheel_look_cooldown) {
+        float speed = msec * 0.001f;
+        cl.viewangles[YAW] -= look.x * speed;
+        cl.viewangles[PITCH] += look.y * speed;
+    } else if (!look.x && !look.y) {
+        // "Unlock" look again once centered
+        wheel_look_cooldown = now;
+    }
 }
 
 static float autosens_x;
@@ -808,6 +833,9 @@ void CL_RegisterInput(void)
     m_autosens = Cvar_Get("m_autosens", "0", 0);
     m_autosens->changed = m_autosens_changed;
     m_autosens_changed(m_autosens);
+
+    cl_joywheelspeed = Cvar_Get("cl_joywheelspeed", "0.5", CVAR_ARCHIVE);
+    cl_wheel_look_cooldown = Cvar_Get("cl_wheel_look_cooldown", "0.5", CVAR_ARCHIVE);
 }
 
 /*

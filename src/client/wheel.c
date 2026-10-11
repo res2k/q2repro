@@ -354,26 +354,28 @@ static int get_wheel_draw_size(void)
     return wheel_draw_size * scr.hud_scale;
 }
 
-void CL_Wheel_Input(int x, int y)
+static bool wheel_accept_input(void)
 {
     if (cl.wheel.state == WHEEL_CLOSED)
-        return;
+        return false;
 
     // always holster while open
     if (!cl.wheel.is_powerup_wheel)
         cl.cmd.buttons |= BUTTON_HOLSTER;
 
     if (cl.wheel.state != WHEEL_OPEN)
-        return;
+        return false;
     
     if (!CL_Wheel_Populate()) {
         CL_Wheel_Close(WHEEL_CLOSE_EMPTY);
-        return;
+        return false;
     }
 
-    cl.wheel.position[0] += x;
-    cl.wheel.position[1] += y;
-    
+    return true;
+}
+
+static void wheel_position_changed(void)
+{
     // clamp position & calculate dir
     cl.wheel.distance = Vector2Length(cl.wheel.position);
     float inner_size = get_wheel_draw_size() / scr.hud_scale * 0.64f;
@@ -389,6 +391,29 @@ void CL_Wheel_Input(int x, int y)
             Vector2Scale(cl.wheel.dir, inner_size / 2, cl.wheel.position);
         }
     }
+}
+
+void CL_Wheel_Input(int x, int y)
+{
+    if (!wheel_accept_input())
+        return;
+
+    cl.wheel.position[0] += x;
+    cl.wheel.position[1] += y;
+
+    wheel_position_changed();
+}
+
+void CL_Wheel_InputStick(float x, float y)
+{
+    if (!wheel_accept_input())
+        return;
+
+    float wheel_size = get_wheel_draw_size();
+    cl.wheel.position[0] = wheel_size * x;
+    cl.wheel.position[1] = wheel_size * y;
+
+    wheel_position_changed();
 }
 
 void CL_Wheel_Update(void)
