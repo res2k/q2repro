@@ -429,6 +429,7 @@ typedef struct {
 
     // weapon wheel state
     struct {
+        gamepad_wheel_look_source_t gamepad_look_source;
         cl_wheel_state_t state;
         vec2_t           position;
         float            distance;

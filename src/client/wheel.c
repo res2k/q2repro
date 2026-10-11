@@ -302,12 +302,26 @@ static bool CL_Wheel_Populate(void)
 
 void CL_Wheel_Open(cl_wheel_open_kind_t kind)
 {
+    // Determine key used to open wheel
+    int key = -1;
+    const char* c = Cmd_Argv(1);
+    if (c[0])
+        key = Q_atoi(c);
+
+    // See if we were triggered by a touchpad press
+    gamepad_wheel_look_source_t look_source = WHEEL_LOOK_STICK;
+    if (key == K_TOUCHPAD || key == K_TOUCHPAD_ALT)
+        look_source = WHEEL_LOOK_TOUCHPAD0;
+    else if (key == K_MISC2 || key == K_MISC2_ALT)
+        look_source = WHEEL_LOOK_TOUCHPAD1;
+
     cl.wheel.is_powerup_wheel = kind == WHEEL_OPEN_POWERUP;
     cl.wheel.selected = -1;
 
     if (!CL_Wheel_Populate())
         return;
 
+    cl.wheel.gamepad_look_source = look_source;
     cl.wheel.state = WHEEL_OPEN;
     cl.wheel.deselect_time = 0;
     Vector2Clear(cl.wheel.position);

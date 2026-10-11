@@ -517,7 +517,7 @@ static void CL_GamepadMove(int msec)
 
     // send "look" input to wheel
     if (cl.wheel.state == WHEEL_OPEN) {
-        if (!Gamepad_GetWheelLook(&look))
+        if (!Gamepad_GetWheelLook(cl.wheel.gamepad_look_source, &look))
             return;
 
         CL_Wheel_InputStick(look.x, look.y);

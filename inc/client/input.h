@@ -36,17 +36,27 @@ typedef struct {
     float y;
 } gamepad_2dinput_t;
 
+/* The wheel input coordinate can come from different sources;
+ * most of the time from the "look" stick, however, when the
+ * wheel was activated by pushing down on a touchpad, use the
+ * respective touchpad as source of the input. */
+typedef enum {
+    WHEEL_LOOK_STICK,
+    WHEEL_LOOK_TOUCHPAD0,
+    WHEEL_LOOK_TOUCHPAD1,
+} gamepad_wheel_look_source_t;
+
 #if USE_GAMEPAD
 void Gamepad_Init(void);
 void Gamepad_Shutdown(void);
 void Gamepad_Frame(void);
 
 bool Gamepad_GetMoveLook(gamepad_2dinput_t *move, gamepad_2dinput_t *look);
-bool Gamepad_GetWheelLook(gamepad_2dinput_t *look);
+bool Gamepad_GetWheelLook(gamepad_wheel_look_source_t source, gamepad_2dinput_t *look);
 #else // USE_GAMEPAD
-#define Gamepad_Init()            (void)0
-#define Gamepad_Shutdown()        (void)0
-#define Gamepad_Frame()           (void)0
-#define Gamepad_GetMoveLook(M, L) (false)
-#define Gamepad_GetWheelLook(L)   (false)
+#define Gamepad_Init()             (void)0
+#define Gamepad_Shutdown()         (void)0
+#define Gamepad_Frame()            (void)0
+#define Gamepad_GetMoveLook(M, L)  (false)
+#define Gamepad_GetWheelLook(S, L) (false)
 #endif // USE_GAMEPAD

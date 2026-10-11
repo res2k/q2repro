@@ -49,7 +49,13 @@ static cvar_t            *cl_joyinvertturn;   // Look axis X invert
 static cvar_t            *cl_joyinvertstrafe; // Move axis X invert
 static cvar_t            *cl_joyinvertmove;   // Move axis Y invert
 
+static cvar_t            *cl_joytouchpadpressure; // touchpad pressure threshold to register it as "down"
+
 extern bool               joy_altmodifier_pressed;
+
+#define MAX_TOUCHPADS 2
+
+static const keycode_t touchpad_button[MAX_TOUCHPADS] = {K_TOUCHPAD, K_MISC2};
 
 typedef struct axisstate_s {
     float value[SDL_GAMEPAD_AXIS_COUNT]; // normalized to +-1
@@ -73,6 +79,12 @@ static struct {
     unsigned            emulatedkeytimer[6];
 
     int                 reported_key[_NUM_KEY_CODES];
+
+    struct {
+        int      num;
+        size_t   down[BC_COUNT(MAX_TOUCHPADS)];
+        unsigned timer[MAX_TOUCHPADS];
+    } touchpad;
 } gamepad;
 
 static void in_joystick_changed(cvar_t *cvar)
@@ -100,6 +112,10 @@ static void init_gamepad_state(void)
     memset(&gamepad.axisstate, 0, sizeof(gamepad.axisstate));
     memset(&gamepad.emulatedkeytimer, 0, sizeof(gamepad.emulatedkeytimer));
     memset(&gamepad.reported_key, 0, sizeof(gamepad.reported_key));
+
+    memset(&gamepad.touchpad, 0, sizeof(gamepad.touchpad));
+    gamepad.touchpad.num = SDL_GetNumGamepadTouchpads(gamepad.ptr);
+    gamepad.touchpad.num = min(gamepad.touchpad.num, MAX_TOUCHPADS);
 }
 
 void Gamepad_Init(void)
@@ -122,6 +138,8 @@ void Gamepad_Init(void)
     cl_joyinvertturn = Cvar_Get("cl_joyinvertturn", "0", CVAR_ARCHIVE);
     cl_joyinvertstrafe = Cvar_Get("cl_joyinvertstrafe", "0", CVAR_ARCHIVE);
     cl_joyinvertmove = Cvar_Get("cl_joyinvertmove", "0", CVAR_ARCHIVE);
+
+    cl_joytouchpadpressure = Cvar_Get("cl_joytouchpadpressure", "0.01", CVAR_ARCHIVE);
 
     if (gamepad.initialized)
         return;
@@ -282,6 +300,28 @@ static void IN_JoyKeyEvent(bool wasdown, bool isdown, int key, unsigned *timer)
     }
 }
 
+static int get_touchpad_index(int key)
+{
+    switch (key) {
+    case K_TOUCHPAD:
+        return 0;
+    case K_MISC2:
+        return 1;
+    }
+
+    return -1;
+}
+
+static void fetch_touchpad_position(int touchpad, gamepad_2dinput_t *pos)
+{
+    bool finger_down = false;
+    if (!SDL_GetGamepadTouchpadFinger(gamepad.ptr, touchpad, 0, &finger_down, &pos->x, &pos->y, NULL) || !finger_down) {
+        // Fallback coordinates
+        pos->x = 0.5f;
+        pos->y = 0.5f;
+    }
+}
+
 void Gamepad_Frame(void)
 {
     // If we don't run an event loop, update gamepad explicitly
@@ -309,7 +349,32 @@ void Gamepad_Frame(void)
         if (!key)
             continue;
 
+        int touchpad = get_touchpad_index(key);
+        if (touchpad >= 0)
+            continue;
+
         IN_JoyKeyEvent(oldstate, newstate, key, &gamepad.button.timer[i]);
+    }
+
+    // Custom touchpad handling for customizable pressure threshold
+    for (int t = 0; t < gamepad.touchpad.num; t++) {
+        float pressure = 0;
+        SDL_GetGamepadTouchpadFinger(gamepad.ptr, t, 0, NULL, NULL, NULL, &pressure);
+
+        if (pressure > 0)
+            Com_DDDPrintf("%s: touchpad %d pressure %g\n", __func__, t, pressure);
+
+        bool newstate = pressure >= cl_joytouchpadpressure->value;
+        bool oldstate = Q_IsBitSet(gamepad.touchpad.down, t);
+
+        if (newstate)
+            Q_SetBit(gamepad.touchpad.down, t);
+        else
+            Q_ClearBit(gamepad.touchpad.down, t);
+
+        int key = touchpad_button[t];
+
+        IN_JoyKeyEvent(oldstate, newstate, key, &gamepad.touchpad.timer[t]);
     }
 
     gamepad_axisstate_t newaxisstate;
@@ -473,12 +538,26 @@ bool Gamepad_GetMoveLook(gamepad_2dinput_t *move, gamepad_2dinput_t *look)
     return true;
 }
 
-bool Gamepad_GetWheelLook(gamepad_2dinput_t *look)
+bool Gamepad_GetWheelLook(gamepad_wheel_look_source_t source, gamepad_2dinput_t *look)
 {
-    gamepad_2dinput_t moveEased;
+    if (source == WHEEL_LOOK_STICK) {
+        gamepad_2dinput_t moveEased;
 
-    if (!get_raw_movelook(&moveEased, look))
+        if (!get_raw_movelook(&moveEased, look))
+            return false;
+
+        return true;
+    }
+
+    int touchpad = source - WHEEL_LOOK_TOUCHPAD0;
+    if (touchpad < 0)
         return false;
+
+    gamepad_2dinput_t current_pos;
+    fetch_touchpad_position(touchpad, &current_pos);
+
+    look->x = 2 * (current_pos.x - 0.5f);
+    look->y = 2 * (current_pos.y - 0.5f);
 
     return true;
 }
