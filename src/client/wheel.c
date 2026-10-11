@@ -300,9 +300,9 @@ static bool CL_Wheel_Populate(void)
     return !!cl.wheel.num_slots;
 }
 
-void CL_Wheel_Open(bool powerup)
+void CL_Wheel_Open(cl_wheel_open_kind_t kind)
 {
-    cl.wheel.is_powerup_wheel = powerup;
+    cl.wheel.is_powerup_wheel = kind == WHEEL_OPEN_POWERUP;
     cl.wheel.selected = -1;
 
     if (!CL_Wheel_Populate())
@@ -324,14 +324,14 @@ void CL_Wheel_ClearInput(void)
         cl.wheel.state = WHEEL_CLOSED;
 }
 
-void CL_Wheel_Close(bool released)
+void CL_Wheel_Close(cl_wheel_close_reason_t reason)
 {
     if (cl.wheel.state != WHEEL_OPEN)
         return;
 
     cl.wheel.state = WHEEL_CLOSING;
 
-    if (released && cl.wheel.selected != -1)
+    if (reason == WHEEL_CLOSE_RELEASED && cl.wheel.selected != -1)
         CL_ClientCommand(va("use_index_only %i\n", cl.wheel.slots[cl.wheel.selected].item_index));
 }
 
@@ -367,7 +367,7 @@ void CL_Wheel_Input(int x, int y)
         return;
     
     if (!CL_Wheel_Populate()) {
-        CL_Wheel_Close(false);
+        CL_Wheel_Close(WHEEL_CLOSE_EMPTY);
         return;
     }
 

@@ -435,10 +435,10 @@ static void IN_MLookUp(void)
 
 static void IN_HolsterDown(void) { KeyDown(&in_holster); }
 static void IN_HolsterUp(void) { KeyUp(&in_holster); }
-static void IN_WheelDown(void) { CL_Wheel_Open(false); }
-static void IN_WheelUp(void) { CL_Wheel_Close(true); }
-static void IN_Wheel2Down(void) { CL_Wheel_Open(true); }
-static void IN_Wheel2Up(void) { CL_Wheel_Close(true); }
+static void IN_WheelDown(void) { CL_Wheel_Open(WHEEL_OPEN_WEAPON); }
+static void IN_WheelUp(void) { CL_Wheel_Close(WHEEL_CLOSE_RELEASED); }
+static void IN_Wheel2Down(void) { CL_Wheel_Open(WHEEL_OPEN_POWERUP); }
+static void IN_Wheel2Up(void) { CL_Wheel_Close(WHEEL_CLOSE_RELEASED); }
 
 static void IN_WeapNext(void)
 {

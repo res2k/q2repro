@@ -928,8 +928,17 @@ void CL_Carousel_Input(void);
 void CL_Carousel_ClearInput(void);
 void CL_Wheel_Precache(void);
 void CL_Wheel_Init(void);
-void CL_Wheel_Open(bool powerup);
-void CL_Wheel_Close(bool released);
+typedef enum
+{
+    WHEEL_OPEN_WEAPON,
+    WHEEL_OPEN_POWERUP,
+} cl_wheel_open_kind_t;
+void CL_Wheel_Open(cl_wheel_open_kind_t kind);
+typedef enum {
+    WHEEL_CLOSE_EMPTY,
+    WHEEL_CLOSE_RELEASED,
+} cl_wheel_close_reason_t;
+void CL_Wheel_Close(cl_wheel_close_reason_t reason);
 void CL_Wheel_Input(int x, int y);
 void CL_Wheel_Draw(void);
 void CL_Wheel_Update(void);
