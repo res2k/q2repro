@@ -314,6 +314,14 @@ static void Keybind_Remove(menuKeybind_t *k)
     }
 }
 
+static const char *altmodifier_cmd = "+altmodifier";
+
+static bool is_altmodifier(int key)
+{
+    const char *binding = Key_BindingForKey(key);
+    return binding && Q_stricmp(binding, altmodifier_cmd) == 0;
+}
+
 static bool keybind_cb(void *arg, int key)
 {
     menuKeybind_t *k = arg;
@@ -329,6 +337,16 @@ static bool keybind_cb(void *arg, int key)
     if ((key < K_GAMEPAD_FIRST && !k->keymouse) || (key >= K_GAMEPAD_FIRST && !k->gamepad))
         return false;
 
+    /* When binding gamepad buttons, supply altmodifier handling.
+     * (Unless we're binding the altmodifier itself.) */
+    if (k->gamepad && (Q_stricmp(k->cmd, altmodifier_cmd) != 0)) {
+        if (is_altmodifier(key)) {
+            menu->keywait_altmodifier = true;
+            return false;
+        } else if (menu->keywait_altmodifier && (key >= K_GAMEPAD_FIRST && key < K_GAMEPAD_ALT_FIRST))
+            key += K_GAMEPAD_ALT_FIRST - K_GAMEPAD_FIRST;
+    }
+
     // menu key is hardcoded
     if (key != K_ESCAPE) {
         if (k->altbinding[0]) {
@@ -340,6 +358,7 @@ static bool keybind_cb(void *arg, int key)
     Keybind_Update(menu);
 
     menu->keywait = false;
+    menu->keywait_altmodifier = false;
     menu->status = k->generic.status;
     Key_WaitKey(NULL, NULL);
 
@@ -352,6 +371,7 @@ static menuSound_t Keybind_DoEnter(menuKeybind_t *k)
     menuFrameWork_t *menu = k->generic.parent;
 
     menu->keywait = true;
+    menu->keywait_altmodifier = false;
     menu->status = k->altstatus;
     Key_WaitKey(keybind_cb, k);
     return QMS_IN;

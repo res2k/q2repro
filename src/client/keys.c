@@ -352,6 +352,13 @@ const char *Key_LabelForBinding(const char *binding)
     return "";
 }
 
+const char *Key_BindingForKey(int key)
+{
+    if (key >= _NUM_KEY_CODES)
+        return NULL;
+    return keybindings[key];
+}
+
 /*
 ===================
 Key_EnumBindings

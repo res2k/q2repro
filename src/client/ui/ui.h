@@ -105,6 +105,7 @@ typedef struct menuFrameWork_s {
     bool compact;
     bool transparent;
     bool keywait;
+    bool keywait_altmodifier;
 
     qhandle_t image;
     color_t color;
