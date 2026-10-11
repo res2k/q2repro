@@ -260,6 +260,9 @@ static bool CL_Wheel_Populate(void)
 
     cl.wheel.num_slots = 0;
 
+    if (!cgame)
+        return false;
+
     int owned = cgame->GetOwnedWeaponWheelWeapons(&cl.frame.ps);
     cl_wheel_slot_t *slot = cl.wheel.slots;
 
