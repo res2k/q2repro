@@ -170,6 +170,8 @@ typedef struct {
     float maxvalue;
     float curvalue;
     float step;
+
+    int precision;
 } menuSlider_t;
 
 #define MAX_COLUMNS     8

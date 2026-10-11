@@ -1834,6 +1834,10 @@ static void Slider_Draw(menuSlider_t *s)
     pos = Q_clipf((s->curvalue - s->minvalue) / (s->maxvalue - s->minvalue), 0, 1);
 
     UI_DrawChar(CONCHAR_WIDTH + RCOLUMN_OFFSET + s->generic.x + (SLIDER_RANGE - 1) * CONCHAR_WIDTH * pos, s->generic.y, flags | UI_LEFT, color, 131);
+
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%.*f", s->precision >= 0 ? s->precision : 1, s->curvalue);
+    UI_DrawString(RCOLUMN_OFFSET + s->generic.x + ((SLIDER_RANGE + 2) * CONCHAR_WIDTH), s->generic.y, flags, color, buffer);
 }
 
 /*

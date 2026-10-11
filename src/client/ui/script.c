@@ -286,14 +286,23 @@ static void Parse_Pairs(menuFrameWork_t *menu)
 
 static void Parse_Range(menuFrameWork_t *menu)
 {
+    static const cmd_option_t o_slider[] = {
+        { "s:", "status" },
+        { "p:", "precision" },
+        { NULL }
+};
     menuSlider_t *s;
     char *status = NULL;
+    int precision = -1;
     int c;
 
-    while ((c = Cmd_ParseOptions(o_common)) != -1) {
+    while ((c = Cmd_ParseOptions(o_slider)) != -1) {
         switch (c) {
         case 's':
             status = cmd_optarg;
+            break;
+        case 'p':
+            precision = Q_atoi(cmd_optarg);
             break;
         default:
             return;
@@ -317,6 +326,7 @@ static void Parse_Range(menuFrameWork_t *menu)
     } else {
         s->step = (s->maxvalue - s->minvalue) / SLIDER_RANGE;
     }
+    s->precision = precision;
 
     Menu_AddItem(menu, s);
 }
