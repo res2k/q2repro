@@ -270,6 +270,8 @@ typedef struct {
     char            altbinding[32];
     char            *cmd;
     char            *altstatus;
+    bool            keymouse;
+    bool            gamepad;
 } menuKeybind_t;
 
 #define MAX_PLAYERMODELS 1024

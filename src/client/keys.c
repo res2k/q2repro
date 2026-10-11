@@ -357,12 +357,16 @@ const char *Key_LabelForBinding(const char *binding)
 Key_EnumBindings
 ===================
 */
-int Key_EnumBindings(int key, const char *binding)
+int Key_EnumBindings(int key, const char *binding, unsigned filter)
 {
     if (key < 0) {
         key = 0;
     }
     for (; key < _NUM_KEY_CODES; key++) {
+        if (key < K_GAMEPAD_FIRST && !(filter & INSRCFLAG_KEYMOUSE))
+            continue;
+        else if (key >= K_GAMEPAD_FIRST && !(filter & INSRCFLAG_GAMEPAD))
+            continue;
         if (keybindings[key]) {
             if (!Q_stricmp(keybindings[key], binding)) {
                 return key;

@@ -410,11 +410,18 @@ static void Parse_Bind(menuFrameWork_t *menu)
     static const cmd_option_t o_bind[] = {
         { "s:", "status" },
         { "S:", "altstatus" },
+        { "k", "keymouse" },
+        { "K", "no-keymouse" },
+        { "g", "gamepad" },
+        { "G", "no-gamepad" },
         { NULL }
     };
     menuKeybind_t *k;
+    bool is_bindgp = strcmp(Cmd_Argv(0), "bindgp") == 0;
+    bool keymouse = !is_bindgp;
+    bool gamepad = is_bindgp;
     const char *status = "Press Enter to change, Backspace to clear";
-    const char *altstatus = "Press the desired key, Escape to cancel";
+    const char *altstatus = NULL;
     int c;
 
     while ((c = Cmd_ParseOptions(o_bind)) != -1) {
@@ -424,6 +431,18 @@ static void Parse_Bind(menuFrameWork_t *menu)
             break;
         case 'S':
             altstatus = cmd_optarg;
+            break;
+        case 'k':
+            keymouse = true;
+            break;
+        case 'K':
+            keymouse = false;
+            break;
+        case 'g':
+            gamepad = true;
+            break;
+        case 'G':
+            gamepad = false;
             break;
         default:
             return;
@@ -435,6 +454,23 @@ static void Parse_Bind(menuFrameWork_t *menu)
         return;
     }
 
+    if (!altstatus) {
+        switch((keymouse ? BIT(0) : 0) | (gamepad ? BIT(1) : 0)) {
+        case BIT(0):
+            altstatus = "Press the desired key, Escape to cancel";
+            break;
+        case BIT(1):
+            altstatus = "Press the desired button, Escape to cancel";
+            break;
+        case BIT(0) | BIT(1):
+            altstatus = "Press the desired key or button, Escape to cancel";
+            break;
+        default:
+            altstatus = "Press Escape to cancel";
+            break;
+        }
+    }
+
     k = UI_Mallocz(sizeof(*k));
     k->generic.type = MTYPE_KEYBIND;
     k->generic.name = UI_CopyString(Cmd_Argv(cmd_optind));
@@ -442,6 +478,8 @@ static void Parse_Bind(menuFrameWork_t *menu)
     k->generic.status = UI_CopyString(status);
     k->cmd = UI_CopyString(Cmd_ArgsFrom(cmd_optind + 1));
     k->altstatus = UI_CopyString(altstatus);
+    k->keymouse = keymouse;
+    k->gamepad = gamepad;
 
     Menu_AddItem(menu, k);
 }
@@ -761,7 +799,7 @@ static bool Parse_File(const char *path, int depth)
                     Parse_Action(menu);
                 } else if (!strcmp(cmd, "bitmap")) {
                     Parse_Bitmap(menu);
-                } else if (!strcmp(cmd, "bind")) {
+                } else if (!strcmp(cmd, "bind") || !strcmp(cmd, "bindgp")) {
                     Parse_Bind(menu);
                 } else if (!strcmp(cmd, "savegame")) {
                     Parse_Savegame(menu, MTYPE_SAVEGAME);

@@ -26,6 +26,18 @@ void IN_Frame(void);
 void IN_Activate(void);
 void IN_WarpMouse(int x, int y);
 
+// Input source types
+typedef enum {
+    INSRC_KEYMOUSE = 0,
+    INSRC_GAMEPAD = 1
+} input_source_t;
+
+// Input source flags
+enum {
+    INSRCFLAG_KEYMOUSE = BIT(INSRC_KEYMOUSE),
+    INSRCFLAG_GAMEPAD = BIT(INSRC_GAMEPAD),
+};
+
 //
 // Gamepad support functions
 //

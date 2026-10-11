@@ -17,6 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "ui.h"
+#include "client/input.h"
 #include "server/server.h"
 #include "common/files.h"
 
@@ -253,16 +254,27 @@ static void Keybind_Draw(menuKeybind_t *k)
                   k->generic.uiFlags | UI_LEFT, color, string);
 }
 
+static unsigned Keybind_Filter(menuKeybind_t *k)
+{
+    unsigned enum_filter = 0;
+    if (k->keymouse)
+        enum_filter |= INSRCFLAG_KEYMOUSE;
+    if (k->gamepad)
+        enum_filter |= INSRCFLAG_GAMEPAD;
+    return enum_filter;
+}
+
 static void Keybind_Push(menuKeybind_t *k)
 {
-    int key = Key_EnumBindings(0, k->cmd);
+    unsigned enum_filter = Keybind_Filter(k);
+    int key = Key_EnumBindings(0, k->cmd, enum_filter);
 
     k->altbinding[0] = 0;
     if (key == -1) {
         strcpy(k->binding, "???");
     } else {
         Q_strlcpy(k->binding, Key_KeynumToString(key), sizeof(k->binding));
-        key = Key_EnumBindings(key + 1, k->cmd);
+        key = Key_EnumBindings(key + 1, k->cmd, enum_filter);
         if (key != -1) {
             Q_strlcpy(k->altbinding, Key_KeynumToString(key), sizeof(k->altbinding));
         }
@@ -288,12 +300,13 @@ static void Keybind_Update(menuFrameWork_t *menu)
     }
 }
 
-static void Keybind_Remove(const char *cmd)
+static void Keybind_Remove(menuKeybind_t *k)
 {
+    unsigned enum_filter = Keybind_Filter(k);
     int key;
 
     for (key = 0; ; key++) {
-        key = Key_EnumBindings(key, cmd);
+        key = Key_EnumBindings(key, k->cmd, enum_filter);
         if (key == -1) {
             break;
         }
@@ -312,10 +325,14 @@ static bool keybind_cb(void *arg, int key)
         return false;
     }
 
+    // Reject keys not matching the keybind options
+    if ((key < K_GAMEPAD_FIRST && !k->keymouse) || (key >= K_GAMEPAD_FIRST && !k->gamepad))
+        return false;
+
     // menu key is hardcoded
     if (key != K_ESCAPE) {
         if (k->altbinding[0]) {
-            Keybind_Remove(k->cmd);
+            Keybind_Remove(k);
         }
         Key_SetBinding(key, k->cmd);
     }
@@ -349,7 +366,7 @@ static menuSound_t Keybind_Key(menuKeybind_t *k, int key)
     }
 
     if (key == K_BACKSPACE || key == K_DEL) {
-        Keybind_Remove(k->cmd);
+        Keybind_Remove(k);
         Keybind_Update(menu);
         return QMS_IN;
     }
