@@ -187,7 +187,7 @@ static const char * CG_CL_GetClientDogtag (int32_t index)
 
 static const char* CG_CL_GetKeyBinding(const char *binding)
 {
-    return Key_LabelForBinding(binding);
+    return Key_LabelForBinding(binding, BIT(IN_GetSource()));
 }
 
 static bool CG_Draw_RegisterPic(const char *name)
@@ -338,7 +338,7 @@ static int32_t CG_SCR_DrawBind(int32_t isplit, const char *binding, const char *
      * - 'purpose' is a string describing what that action/key does. Needs localization.
      * - Rerelease has some fancy graphics for keys and such. We ... don't ¯\_(ツ)_/¯
      */
-    const char *key = Key_LabelForBinding(binding);
+    const char *key = Key_LabelForBinding(binding, BIT(IN_GetSource()));
 
     char str[MAX_STRING_CHARS];
     if (!*key)

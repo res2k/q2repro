@@ -337,11 +337,14 @@ Key_LabelForBinding
 Returns the name of the first key found.
 ===================
 */
-const char *Key_LabelForBinding(const char *binding)
+const char *Key_LabelForBinding(const char *binding, unsigned sources)
 {
     int key;
 
     for (key = 0; key < _NUM_KEY_CODES; key++) {
+
+        if ((sources & (key < K_GAMEPAD_FIRST ? INSRCFLAG_KEYMOUSE : INSRC_GAMEPAD)) == 0)
+            continue;
         if (keybindings[key]) {
             if (!Q_stricmp(keybindings[key], binding)) {
                 return Key_KeynumToString(key);
@@ -684,6 +687,8 @@ void Key_Event(unsigned key, bool down, unsigned time)
     if (key_wait_cb && down && !key_wait_cb(key_wait_arg, key)) {
         return;
     }
+
+    IN_SetSource(key < K_GAMEPAD_FIRST ? INSRC_KEYMOUSE : INSRC_GAMEPAD);
 
     // update key down and auto-repeat status
     if (down) {

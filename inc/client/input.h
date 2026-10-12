@@ -38,6 +38,10 @@ enum {
     INSRCFLAG_GAMEPAD = BIT(INSRC_GAMEPAD),
 };
 
+// Input source tracking
+void IN_SetSource(input_source_t source);
+input_source_t IN_GetSource(void);
+
 //
 // Gamepad support functions
 //

@@ -57,6 +57,8 @@ static cvar_t    *cl_wheel_look_cooldown;
 
 bool joy_altmodifier_pressed = false;
 
+static input_source_t input_source;
+
 /*
 ===============================================================================
 
@@ -153,6 +155,16 @@ void IN_WarpMouse(int x, int y)
     if (vid && vid->warp_mouse) {
         vid->warp_mouse(x, y);
     }
+}
+
+void IN_SetSource(input_source_t source)
+{
+    input_source = source;
+}
+
+input_source_t IN_GetSource(void)
+{
+    return input_source;
 }
 
 /*
@@ -528,6 +540,11 @@ static void CL_GamepadMove(int msec)
     if (!Gamepad_GetMoveLook(&move, &look))
         return;
 
+    if (!move.x && !move.y && !look.x && !look.y)
+        return;
+
+    IN_SetSource(INSRC_GAMEPAD);
+
     cl.mousemove[1] += cl_sidespeed->value * move.x;
     cl.mousemove[0] -= cl_forwardspeed->value * move.y;
 
@@ -584,6 +601,8 @@ static void CL_MouseMove(void)
     if (!mx && !my) {
         return;
     }
+
+    IN_SetSource(INSRC_KEYMOUSE);
 
     Cvar_ClampValue(m_accel, 0, 1);
 

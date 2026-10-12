@@ -195,7 +195,7 @@ void        Key_ClearStates(void);
 const char  *Key_KeynumToString(int keynum);
 int     Key_StringToKeynum(const char *str);
 void    Key_SetBinding(int keynum, const char *binding);
-const char  *Key_LabelForBinding(const char *binding);
+const char  *Key_LabelForBinding(const char *binding, unsigned sources);
 const char *Key_BindingForKey(int key);
 int Key_EnumBindings(int key, const char *binding, unsigned sources);
 void    Key_WriteBindings(qhandle_t f);
