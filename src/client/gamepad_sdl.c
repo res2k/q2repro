@@ -174,7 +174,7 @@ void Gamepad_Shutdown(void)
 static void check_gamepad_connected(void)
 {
     if (gamepad.ptr && !SDL_GamepadConnected(gamepad.ptr)) {
-        Com_NPrintf("gamepad disconnected: %s\n", SDL_GetGamepadName(gamepad.ptr));
+        Com_WPrintf("gamepad disconnected: %s\n", SDL_GetGamepadName(gamepad.ptr));
         SDL_CloseGamepad(gamepad.ptr);
         gamepad.ptr = NULL;
     }
