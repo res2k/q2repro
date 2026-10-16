@@ -2329,6 +2329,15 @@ static size_t CL_Surface_m(char *buffer, size_t size)
     return Q_snprintf(buffer, size, "%s %#x", trace.surface->name, trace.surface->flags);
 }
 
+static size_t IN_Gamepad_m(char* buffer, size_t size)
+{
+    const char *gamepad = Gamepad_Name();
+    if (!gamepad)
+        return Q_strlcpy(buffer, "", size);
+
+    return Q_strlcpy(buffer, gamepad, size);
+}
+
 /*
 ===============
 CL_WriteConfig
@@ -2866,6 +2875,8 @@ static void CL_InitLocal(void)
     Cmd_AddMacro("cl_weaponmodel", CL_WeaponModel_m);
     Cmd_AddMacro("cl_numentities", CL_NumEntities_m);
     Cmd_AddMacro("cl_surface", CL_Surface_m);
+
+    Cmd_AddMacro("in_gamepad", IN_Gamepad_m);
 }
 
 static const cmdreg_t c_ignores[] = {
