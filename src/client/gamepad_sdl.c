@@ -561,3 +561,10 @@ bool Gamepad_GetWheelLook(gamepad_wheel_look_source_t source, gamepad_2dinput_t 
 
     return true;
 }
+
+const char *Gamepad_Name(void)
+{
+    if (!gamepad.ptr)
+        return NULL;
+    return SDL_GetGamepadName(gamepad.ptr);
+}
