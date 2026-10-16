@@ -61,6 +61,7 @@ typedef enum {
     MTYPE_IMAGESPINCONTROL,
     MTYPE_EPISODE,
     MTYPE_UNIT,
+    MTYPE_INFO,
 } menuType_t;
 
 #define QMF_LEFT_JUSTIFY    BIT(0)
@@ -92,6 +93,7 @@ typedef enum {
 #define UI_IsItemSelectable(item) \
     ((item)->type != MTYPE_SEPARATOR && \
      (item)->type != MTYPE_STATIC && \
+     (item)->type != MTYPE_INFO && \
      !((item)->flags & (QMF_GRAYED | QMF_HIDDEN | QMF_DISABLED)))
 
 typedef struct menuFrameWork_s {
@@ -276,6 +278,12 @@ typedef struct {
     bool            keymouse;
     bool            gamepad;
 } menuKeybind_t;
+
+typedef struct {
+    menuCommon_t    generic;
+    char            *value;
+    char            *dflt;
+} menuInfo_t;
 
 #define MAX_PLAYERMODELS 1024
 

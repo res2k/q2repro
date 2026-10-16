@@ -1920,6 +1920,62 @@ static void Savegame_Push(menuAction_t *a)
 /*
 ===================================================================
 
+INFO CONTROL
+
+===================================================================
+*/
+
+static void Info_Free(menuInfo_t *i)
+{
+    Z_Free(i->generic.name);
+    Z_Free(i->generic.status);
+    Z_Free(i->value);
+    Z_Free(i->dflt);
+    Z_Free(i);
+}
+
+static void Info_Init(menuInfo_t *i)
+{
+    i->generic.uiFlags &= ~(UI_LEFT | UI_RIGHT);
+
+    i->generic.rect.x = i->generic.x + LCOLUMN_OFFSET;
+    i->generic.rect.y = i->generic.y;
+
+    UI_StringDimensions(&i->generic.rect,
+                        i->generic.uiFlags | UI_RIGHT, i->generic.name);
+
+    /* I think having a proper generic rect would be relevant for mouse selection,
+     * but "info" entries are not selectable anyway */
+}
+
+static void Info_Draw(menuInfo_t *i)
+{
+    UI_DrawString(i->generic.x + LCOLUMN_OFFSET, i->generic.y,
+                  i->generic.uiFlags | UI_RIGHT | UI_ALTCOLOR, COLOR_WHITE, i->generic.name);
+
+    const char *value = Cmd_MacroExpandString(i->value, false);
+    bool defaulted = false;
+
+    if (!value || !*value) {
+        value = i->dflt;
+        defaulted = true;
+    }
+
+    if (value) {
+        int uiFlags = i->generic.uiFlags | UI_ALTCOLOR;
+        color_t color = COLOR_WHITE;
+        if (defaulted) {
+            // draw value shaded if the default was picked
+            uiFlags &= ~UI_ALTCOLOR;
+            color = COLOR_RGB(0, 128, 0);
+        }
+        UI_DrawString(i->generic.x + RCOLUMN_OFFSET, i->generic.y, uiFlags, color, value);
+    }
+}
+
+/*
+===================================================================
+
 MISC
 
 ===================================================================
@@ -2046,17 +2102,25 @@ void Menu_Init(menuFrameWork_t *menu)
         case MTYPE_BITMAP:
             Bitmap_Init(item);
             break;
+        case MTYPE_INFO:
+            Info_Init(item);
+            break;
         default:
             Q_assert(!"unknown item type");
         }
     }
 
-    // set focus to the first item by default
+    // set focus to the first selectable item by default
     if (!focus && menu->nitems) {
-        item = menu->items[0];
-        ((menuCommon_t *)item)->flags |= QMF_HASFOCUS;
-        if (((menuCommon_t *)item)->status) {
-            menu->status = ((menuCommon_t *)item)->status;
+        i = 0;
+        while (i < menu->nitems && !UI_IsItemSelectable((menuCommon_t *)(menu->items[i])))
+            i++;
+        if (i < menu->nitems) {
+            item = menu->items[i];
+            ((menuCommon_t *)item)->flags |= QMF_HASFOCUS;
+            if (((menuCommon_t *)item)->status) {
+                menu->status = ((menuCommon_t *)item)->status;
+            }
         }
     }
 
@@ -2432,6 +2496,9 @@ void Menu_Draw(menuFrameWork_t *menu)
             break;
         case MTYPE_IMAGESPINCONTROL:
             ImageSpinControl_Draw(item);
+            break;
+        case MTYPE_INFO:
+            Info_Draw(item);
             break;
         default:
             Q_assert(!"unknown item type");
@@ -2814,6 +2881,9 @@ void Menu_Free(menuFrameWork_t *menu)
             break;
         case MTYPE_IMAGESPINCONTROL:
             ImageSpinControl_Free(item);
+            break;
+        case MTYPE_INFO:
+            Info_Free(item);
             break;
         default:
             break;

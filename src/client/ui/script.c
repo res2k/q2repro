@@ -642,6 +642,41 @@ static void Parse_Blank(menuFrameWork_t *menu)
     Menu_AddItem(menu, s);
 }
 
+static void Parse_Info(menuFrameWork_t *menu)
+{
+    static const cmd_option_t o_info[] = {
+        { "d:", "default" },
+        { NULL }
+    };
+    menuInfo_t *i;
+    const char *dflt = NULL;
+    int c;
+
+    while ((c = Cmd_ParseOptions(o_info)) != -1) {
+        switch (c) {
+        case 'd':
+            dflt = cmd_optarg;
+            break;
+        default:
+            return;
+        }
+    }
+
+    if (Cmd_Argc() - cmd_optind < 2) {
+        Com_Printf("Usage: %s <name> <string>\n", Cmd_Argv(0));
+        return;
+    }
+
+    i = UI_Mallocz(sizeof(*i));
+    i->generic.type = MTYPE_INFO;
+    i->generic.name = UI_CopyString(Cmd_Argv(cmd_optind));
+    i->generic.uiFlags = UI_CENTER;
+    i->value = UI_CopyString(Cmd_ArgsFrom(cmd_optind + 1));
+    i->dflt = UI_CopyString(dflt);
+
+    Menu_AddItem(menu, i);
+}
+
 static void Parse_Background(menuFrameWork_t *menu)
 {
     char *s = Cmd_Argv(1);
@@ -827,6 +862,8 @@ static bool Parse_File(const char *path, int depth)
                     Parse_EpisodeSelector(menu);
                 } else if (!strcmp(cmd, "unit_selector")) {
                     Parse_UnitSelector(menu);
+                } else if (!strcmp(cmd, "info")) {
+                    Parse_Info(menu);
                 } else {
                     Com_WPrintf("Unknown keyword '%s'\n", cmd);
                 }
