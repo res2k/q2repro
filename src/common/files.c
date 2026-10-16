@@ -66,11 +66,13 @@ typedef struct {
     extern const size_t res_##n##_size;
 
 FORWARD_EMBEDDED_FILE(q2pro_menu);
+FORWARD_EMBEDDED_FILE(q2reprodefault_cfg);
 
 static const builtin_file_t builtin_files[] = {
 #if USE_CLIENT
     { "q2repro.menu", res_q2pro_menu, &res_q2pro_menu_size },
 #endif
+    { "q2reprodefault.cfg", res_q2reprodefault_cfg, &res_q2reprodefault_cfg_size },
     { NULL }
 };
 
@@ -3865,6 +3867,7 @@ void FS_AddConfigFiles(bool init)
     // default.cfg may come from packfile, but config.cfg and autoexec.cfg
     // must be real files within the game directory.
     Com_AddConfigFile(COM_DEFAULT_CFG, flag);
+    Com_AddConfigFile(COM_CLIENT_DEFAULT_CFG, flag);
     Com_AddConfigFile(COM_CONFIG_CFG, FS_TYPE_REAL | flag);
 
     // autoexec.cfg is executed twice, first from basedir and then from

@@ -571,11 +571,11 @@ if get_option('client-gtv')
   config.set10('USE_CLIENT_GTV', true)
 endif
 
+prog_embed = find_program('embed.py')
+
 if get_option('client-ui')
 
   # embed q2pro.menu
-  prog_embed = find_program('embed.py')
-
   q2pro_menu_c = custom_target(
       'q2pro.menu.c',
       output : 'q2pro.menu.c',
@@ -637,6 +637,15 @@ if get_option('tests')
   common_src += 'src/common/tests.c'
   config.set10('USE_TESTS', true)
 endif
+
+# Embed custom default config
+q2reprodefault_cfg_c = custom_target(
+    'q2reprodefault.cfg.c',
+    output : 'q2reprodefault.cfg.c',
+    input : 'src/client/q2reprodefault.cfg',
+    command : [prog_embed, '@INPUT@', '@OUTPUT@', 'res_q2reprodefault_cfg'],
+)
+common_src += q2reprodefault_cfg_c
 
 if get_option('debug')
   refresh_src += 'src/refresh/debug.c'
