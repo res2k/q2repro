@@ -50,6 +50,8 @@ static cvar_t            *cl_joyinvertstrafe; // Move axis X invert
 static cvar_t            *cl_joyinvertmove;   // Move axis Y invert
 
 static cvar_t            *cl_joytouchpadpressure; // touchpad pressure threshold to register it as "down"
+static cvar_t            *cl_joytouchpadsplit;    // if only a single touchpad is present, split it down the middle
+                                                  // and pretend we have a left and right touchpad
 
 extern bool               joy_altmodifier_pressed;
 
@@ -81,9 +83,12 @@ static struct {
     int                 reported_key[_NUM_KEY_CODES];
 
     struct {
-        int      num;
-        size_t   down[BC_COUNT(MAX_TOUCHPADS)];
-        unsigned timer[MAX_TOUCHPADS];
+        int               num;
+        int               fingers[MAX_TOUCHPADS];
+        bool              split;
+        size_t            down[BC_COUNT(MAX_TOUCHPADS)];
+        gamepad_2dinput_t touch_pos[MAX_TOUCHPADS];
+        unsigned          timer[MAX_TOUCHPADS];
     } touchpad;
 } gamepad;
 
@@ -93,6 +98,18 @@ static void in_joystick_changed(cvar_t *cvar)
         Gamepad_Init();
     else if (!in_joystick->integer && gamepad.initialized)
         Gamepad_Shutdown();
+}
+
+static void init_touchpad_split(void)
+{
+    gamepad.touchpad.split = gamepad.touchpad.num == 1 && cl_joytouchpadsplit->integer != 0;
+}
+
+static void cl_joytouchpadsplit_changed(cvar_t *cvar)
+{
+    if (!gamepad.ptr)
+        return;
+    init_touchpad_split();
 }
 
 static void init_gamepad_state(void)
@@ -116,6 +133,9 @@ static void init_gamepad_state(void)
     memset(&gamepad.touchpad, 0, sizeof(gamepad.touchpad));
     gamepad.touchpad.num = SDL_GetNumGamepadTouchpads(gamepad.ptr);
     gamepad.touchpad.num = min(gamepad.touchpad.num, MAX_TOUCHPADS);
+    for (int t = 0; t < gamepad.touchpad.num; t++)
+        gamepad.touchpad.fingers[t] = SDL_GetNumGamepadTouchpadFingers(gamepad.ptr, t);
+    init_touchpad_split();
 }
 
 void Gamepad_Init(void)
@@ -140,6 +160,8 @@ void Gamepad_Init(void)
     cl_joyinvertmove = Cvar_Get("cl_joyinvertmove", "0", CVAR_ARCHIVE);
 
     cl_joytouchpadpressure = Cvar_Get("cl_joytouchpadpressure", "0.01", CVAR_ARCHIVE);
+    cl_joytouchpadsplit = Cvar_Get("cl_joytouchpadsplit", "1", CVAR_ARCHIVE);
+    cl_joytouchpadsplit->changed = cl_joytouchpadsplit_changed;
 
     if (gamepad.initialized)
         return;
@@ -312,14 +334,52 @@ static int get_touchpad_index(int key)
     return -1;
 }
 
-static void fetch_touchpad_position(int touchpad, gamepad_2dinput_t *pos)
+/* Touchpad handling:
+ * - customizable pressure threshold
+ * - split touchpad emulation
+ */
+static unsigned get_pushed_touchpads(void)
 {
-    bool finger_down = false;
-    if (!SDL_GetGamepadTouchpadFinger(gamepad.ptr, touchpad, 0, &finger_down, &pos->x, &pos->y, NULL) || !finger_down) {
-        // Fallback coordinates
-        pos->x = 0.5f;
-        pos->y = 0.5f;
+    unsigned pushes = 0;
+    if (gamepad.touchpad.split) {
+        // We have a single touchpad, and depending on the side we have touch(es), simulate touchpad 0 or 1
+        for (int f = 0; f < gamepad.touchpad.fingers[0]; f++) {
+            gamepad_2dinput_t pos = {0.5f, 0.5f};
+            float             pressure = 0;
+            SDL_GetGamepadTouchpadFinger(gamepad.ptr, 0, f, NULL, &pos.x, &pos.y, &pressure);
+
+            if (pressure > 0)
+                Com_DDDPrintf("%s: touchpad 0 finger %d pressure %g\n", __func__, f, pressure);
+
+            int touchpad_idx = 0;
+            if (pos.x >= 0.5f) {
+                pos.x -= 0.5f;
+                touchpad_idx = 1;
+            }
+            pos.x *= 2;
+
+            if (pushes & BIT(touchpad_idx))
+                continue; // another finger is pushing down in this half already...
+
+            if (pressure >= cl_joytouchpadpressure->value) {
+                pushes |= BIT(touchpad_idx);
+                memcpy(&gamepad.touchpad.touch_pos[touchpad_idx], &pos, sizeof(gamepad_2dinput_t));
+            }
+        }
+    } else {
+        // Just look at the first finger of each touchpad
+        for (int t = 0; t < gamepad.touchpad.num; t++) {
+            gamepad_2dinput_t pos = {0.5f, 0.5f};
+            float             pressure = 0;
+            SDL_GetGamepadTouchpadFinger(gamepad.ptr, t, 0, NULL, &pos.x, &pos.y, &pressure);
+
+            if (pressure >= cl_joytouchpadpressure->value) {
+                pushes |= BIT(t);
+                memcpy(&gamepad.touchpad.touch_pos[t], &pos, sizeof(gamepad_2dinput_t));
+            }
+        }
     }
+    return pushes;
 }
 
 void Gamepad_Frame(void)
@@ -356,15 +416,11 @@ void Gamepad_Frame(void)
         IN_JoyKeyEvent(oldstate, newstate, key, &gamepad.button.timer[i]);
     }
 
-    // Custom touchpad handling for customizable pressure threshold
-    for (int t = 0; t < gamepad.touchpad.num; t++) {
-        float pressure = 0;
-        SDL_GetGamepadTouchpadFinger(gamepad.ptr, t, 0, NULL, NULL, NULL, &pressure);
-
-        if (pressure > 0)
-            Com_DDDPrintf("%s: touchpad %d pressure %g\n", __func__, t, pressure);
-
-        bool newstate = pressure >= cl_joytouchpadpressure->value;
+    // Compute touchpad buttons we tell the game
+    unsigned pressed_touchpads = get_pushed_touchpads();
+    int      virtual_touchpads = gamepad.touchpad.split ? 2 : gamepad.touchpad.num;
+    for (int t = 0; t < virtual_touchpads; t++) {
+        bool newstate = (pressed_touchpads & BIT(t)) != 0;
         bool oldstate = Q_IsBitSet(gamepad.touchpad.down, t);
 
         if (newstate)
@@ -554,7 +610,7 @@ bool Gamepad_GetWheelLook(gamepad_wheel_look_source_t source, gamepad_2dinput_t 
         return false;
 
     gamepad_2dinput_t current_pos;
-    fetch_touchpad_position(touchpad, &current_pos);
+    memcpy(&current_pos, &gamepad.touchpad.touch_pos[touchpad], sizeof(gamepad_2dinput_t));
 
     look->x = 2 * (current_pos.x - 0.5f);
     look->y = 2 * (current_pos.y - 0.5f);
