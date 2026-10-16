@@ -457,8 +457,18 @@ static void IN_WheelUp(void) { CL_Wheel_Close(WHEEL_CLOSE_RELEASED); }
 static void IN_Wheel2Down(void) { CL_Wheel_Open(WHEEL_OPEN_POWERUP); }
 static void IN_Wheel2Up(void) { CL_Wheel_Close(WHEEL_CLOSE_RELEASED); }
 
+static bool IN_InventoryVisible(void)
+{
+    return (cl.frame.ps.stats[STAT_LAYOUTS] & LAYOUTS_INVENTORY) != 0;
+}
+
 static void IN_WeapNext(void)
 {
+    if (IN_InventoryVisible()) {
+        Cbuf_AddText(&cmd_buffer, "invnext\n");
+        return;
+    }
+
     if (cl.game_api != Q2PROTO_GAME_RERELEASE) {
         Cbuf_AddText(&cmd_buffer, "weapnext\n");
         return;
@@ -469,6 +479,11 @@ static void IN_WeapNext(void)
 
 static void IN_WeapPrev(void)
 {
+    if (IN_InventoryVisible()) {
+        Cbuf_AddText(&cmd_buffer, "invprev\n");
+        return;
+    }
+
     if (cl.game_api != Q2PROTO_GAME_RERELEASE) {
         Cbuf_AddText(&cmd_buffer, "weapprev\n");
         return;

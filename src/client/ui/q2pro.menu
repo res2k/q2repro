@@ -417,14 +417,14 @@ begin gamepad
     toggle "enable gamepad" in_joystick
     blank
     bindgp "attack" +attack
-    bindgp "next weapon" cl_weapnext // cl_... for remaster default bindings compatibility
-    bindgp "previous weapon" cl_weapprev // cl_... for remaster default bindings compatibility
+    bindgp "next weapon/item" cl_weapnext // cl_... for remaster default bindings compatibility
+    bindgp "previous weapon/item" cl_weapprev // cl_... for remaster default bindings compatibility
     bindgp "up / jump" +moveup
     bindgp "down / crouch" +movedown
-    // FIXME: Offer inventory controls? Could be useful for vanilla games...
-    // bindgp "inventory" inven
-    // bindgp "use item" invuse
-    // bindgp "drop item" invdrop
+    // Offer some, inventory controls, they're useful for vanilla games...
+    bindgp "inventory" inven
+    bindgp "use item" invuse
+    bindgp "drop item" invdrop
     // bindgp "prev item" invprev
     // bindgp "next item" invnext
     bindgp "help computer" "cmd help"
