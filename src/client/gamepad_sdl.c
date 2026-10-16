@@ -59,6 +59,29 @@ extern bool               joy_altmodifier_pressed;
 
 static const keycode_t touchpad_button[MAX_TOUCHPADS] = {K_TOUCHPAD, K_MISC2};
 
+#define BUTTON_MAPPINGS                                                                                                \
+    BM(SOUTH, A_BUTTON)                                                                                                \
+    BM(EAST, B_BUTTON)                                                                                                 \
+    BM(WEST, X_BUTTON)                                                                                                 \
+    BM(NORTH, Y_BUTTON)                                                                                                \
+    BM(BACK, PAD_VIEW)                                                                                                 \
+    BM(START, PAD_MENU)                                                                                                \
+    BM(LEFT_STICK, LEFT_STICK)                                                                                         \
+    BM(RIGHT_STICK, RIGHT_STICK)                                                                                       \
+    BM(LEFT_SHOULDER, LEFT_SHOULDER)                                                                                   \
+    BM(RIGHT_SHOULDER, RIGHT_SHOULDER)                                                                                 \
+    BM(DPAD_UP, DPAD_UP)                                                                                               \
+    BM(DPAD_DOWN, DPAD_DOWN)                                                                                           \
+    BM(DPAD_LEFT, DPAD_LEFT)                                                                                           \
+    BM(DPAD_RIGHT, DPAD_RIGHT)                                                                                         \
+    BM(MISC1, MISC1)                                                                                                   \
+    BM(RIGHT_PADDLE1, RIGHT_PADDLE1)                                                                                   \
+    BM(LEFT_PADDLE1, LEFT_PADDLE1)                                                                                     \
+    BM(RIGHT_PADDLE2, RIGHT_PADDLE2)                                                                                   \
+    BM(LEFT_PADDLE2, LEFT_PADDLE2)                                                                                     \
+    BM(TOUCHPAD, TOUCHPAD)                                                                                             \
+    BM(MISC2, MISC2)
+
 typedef struct axisstate_s {
     float value[SDL_GAMEPAD_AXIS_COUNT]; // normalized to +-1
 } gamepad_axisstate_t;
@@ -228,48 +251,11 @@ IN_KeyForControllerButton
 static int IN_KeyForControllerButton(SDL_GamepadButton button)
 {
     switch (button) {
-    case SDL_GAMEPAD_BUTTON_SOUTH:
-        return K_A_BUTTON;
-    case SDL_GAMEPAD_BUTTON_EAST:
-        return K_B_BUTTON;
-    case SDL_GAMEPAD_BUTTON_WEST:
-        return K_X_BUTTON;
-    case SDL_GAMEPAD_BUTTON_NORTH:
-        return K_Y_BUTTON;
-    case SDL_GAMEPAD_BUTTON_BACK:
-        return K_PAD_VIEW;
-    case SDL_GAMEPAD_BUTTON_START:
-        return K_PAD_MENU;
-    case SDL_GAMEPAD_BUTTON_LEFT_STICK:
-        return K_LEFT_STICK;
-    case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
-        return K_RIGHT_STICK;
-    case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
-        return K_LEFT_SHOULDER;
-    case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
-        return K_RIGHT_SHOULDER;
-    case SDL_GAMEPAD_BUTTON_DPAD_UP:
-        return K_DPAD_UP;
-    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
-        return K_DPAD_DOWN;
-    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
-        return K_DPAD_LEFT;
-    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
-        return K_DPAD_RIGHT;
-    case SDL_GAMEPAD_BUTTON_MISC1:
-        return K_MISC1;
-    case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1:
-        return K_RIGHT_PADDLE1;
-    case SDL_GAMEPAD_BUTTON_LEFT_PADDLE1:
-        return K_LEFT_PADDLE1;
-    case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2:
-        return K_RIGHT_PADDLE2;
-    case SDL_GAMEPAD_BUTTON_LEFT_PADDLE2:
-        return K_LEFT_PADDLE2;
-    case SDL_GAMEPAD_BUTTON_TOUCHPAD:
-        return K_TOUCHPAD;
-    case SDL_GAMEPAD_BUTTON_MISC2:
-        return K_MISC2;
+#define BM(SDL, K)                                                                                                     \
+    case SDL_GAMEPAD_BUTTON_##SDL:                                                                                     \
+        return K_##K;
+        BUTTON_MAPPINGS
+#undef BM
     default:
         return 0;
     }
@@ -630,4 +616,77 @@ bool Gamepad_HasTouchpad(void)
     if (!gamepad.ptr)
         return false;
     return SDL_GetNumGamepadTouchpads(gamepad.ptr) > 0;
+}
+
+static SDL_GamepadButton IN_ControllerButtonForKey(int key)
+{
+    switch (key) {
+#define BM(SDL, K)                                                                                                     \
+    case K_##K:                                                                                                        \
+        return SDL_GAMEPAD_BUTTON_##SDL;
+        BUTTON_MAPPINGS
+#undef BM
+    default:
+        return SDL_GAMEPAD_BUTTON_INVALID;
+    }
+}
+
+const char *Gamepad_GetButtonLabel(int button)
+{
+    if (button < K_GAMEPAD_FIRST || button >= K_GAMEPAD_ALT_FIRST)
+        return NULL;
+
+    const char *label_str = NULL;
+    if (button == K_TOUCHPAD || button == K_MISC2) {
+        // Translate the internal touchpad buttons into nicer labels
+        switch (button) {
+        case K_TOUCHPAD:
+            label_str = "TOUCHPAD_LEFT";
+            break;
+        case K_MISC2:
+            label_str = "TOUCHPAD_RIGHT";
+            break;
+        }
+    } else if (gamepad.ptr) {
+        // Ask SDL for correct labels
+        SDL_GamepadButton sdl_button = IN_ControllerButtonForKey(button);
+        if (sdl_button == SDL_GAMEPAD_BUTTON_INVALID)
+            return NULL;
+
+        SDL_GamepadButtonLabel sdl_label = SDL_GetGamepadButtonLabel(gamepad.ptr, sdl_button);
+        switch (sdl_label) {
+#define L(LABEL)                                                                                                       \
+    case SDL_GAMEPAD_BUTTON_LABEL_##LABEL:                                                                             \
+        label_str = #LABEL;                                                                                            \
+        break;
+            L(A)
+            L(B)
+            L(X)
+            L(Y)
+            L(CROSS)
+            L(CIRCLE)
+            L(SQUARE)
+            L(TRIANGLE)
+#undef L
+        case SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN:
+            break;
+        }
+    } else {
+        // Some hardcoded friendly labels
+        switch (button) {
+        case K_A_BUTTON:
+            label_str = "A";
+            break;
+        case K_B_BUTTON:
+            label_str = "B";
+            break;
+        case K_X_BUTTON:
+            label_str = "X";
+            break;
+        case K_Y_BUTTON:
+            label_str = "Y";
+            break;
+        }
+    }
+    return label_str;
 }

@@ -273,10 +273,10 @@ static void Keybind_Push(menuKeybind_t *k)
     if (key == -1) {
         strcpy(k->binding, "???");
     } else {
-        Q_strlcpy(k->binding, Key_KeynumToString(key), sizeof(k->binding));
+        Q_strlcpy(k->binding, Key_KeynumToLabel(key), sizeof(k->binding));
         key = Key_EnumBindings(key + 1, k->cmd, enum_filter);
         if (key != -1) {
-            Q_strlcpy(k->altbinding, Key_KeynumToString(key), sizeof(k->altbinding));
+            Q_strlcpy(k->altbinding, Key_KeynumToLabel(key), sizeof(k->altbinding));
         }
     }
 }

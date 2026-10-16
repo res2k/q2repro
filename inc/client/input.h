@@ -72,6 +72,7 @@ bool Gamepad_GetWheelLook(gamepad_wheel_look_source_t source, gamepad_2dinput_t 
 
 const char *Gamepad_Name(void);
 bool Gamepad_HasTouchpad(void);
+const char *Gamepad_GetButtonLabel(int button);
 #else // USE_GAMEPAD
 #define Gamepad_Init()             (void)0
 #define Gamepad_Shutdown()         (void)0
@@ -80,4 +81,5 @@ bool Gamepad_HasTouchpad(void);
 #define Gamepad_GetWheelLook(S, L) (false)
 #define Gamepad_Name()             (NULL)
 #define Gamepad_HasTouchpad()      (false)
+#define Gamepad_GetButtonLabel(B)  (NULL)
 #endif // USE_GAMEPAD

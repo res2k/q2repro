@@ -330,6 +330,33 @@ const char *Key_KeynumToString(int keynum)
     return "<UNKNOWN KEYNUM>";
 }
 
+static const char* alt_modifier_label(void)
+{
+    int key = Key_EnumBindings(0, "+altmodifier", INSRCFLAG_KEYMOUSE | INSRCFLAG_GAMEPAD);
+    if (key != -1 && key < K_GAMEPAD_ALT_FIRST) // _ALT keys are skipped to avoid recursion
+        return Key_KeynumToLabel(key);
+    return "???";
+}
+
+const char  *Key_KeynumToLabel(int keynum)
+{
+    bool is_gamepad_alt = keynum >= K_GAMEPAD_ALT_FIRST;
+    if (is_gamepad_alt)
+        keynum -= K_GAMEPAD_ALT_FIRST - K_GAMEPAD_FIRST;
+
+    const char *label_str = NULL;
+    // First check if it's a gamepad button
+    label_str = Gamepad_GetButtonLabel(keynum);
+    // Return default label
+    if (!label_str)
+        label_str = Key_KeynumToString(keynum);
+
+    if (is_gamepad_alt)
+        return va("%s+%s", alt_modifier_label(), label_str);
+    else
+        return label_str;
+}
+
 /*
 ===================
 Key_LabelForBinding
@@ -347,7 +374,7 @@ const char *Key_LabelForBinding(const char *binding, unsigned sources)
             continue;
         if (keybindings[key]) {
             if (!Q_stricmp(keybindings[key], binding)) {
-                return Key_KeynumToString(key);
+                return Key_KeynumToLabel(key);
             }
         }
     }
