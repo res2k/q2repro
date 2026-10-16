@@ -455,5 +455,7 @@ begin gamepad_advanced
     info "touchpad available" "$in_gamepad_has_touchpad"
     range --precision 3 "touchpad pressure threshold" cl_joytouchpadpressure 0 1 0.001
     blank
+    toggle "LED damage color" cl_joydamageblendled
+    blank
     bind --keymouse --gamepad "gamepad alternative modifier" +altmodifier
 end

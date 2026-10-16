@@ -53,6 +53,8 @@ static cvar_t            *cl_joytouchpadpressure; // touchpad pressure threshold
 static cvar_t            *cl_joytouchpadsplit;    // if only a single touchpad is present, split it down the middle
                                                   // and pretend we have a left and right touchpad
 
+static cvar_t            *cl_joydamageblendled;
+
 extern bool               joy_altmodifier_pressed;
 
 #define MAX_TOUCHPADS 2
@@ -185,6 +187,8 @@ void Gamepad_Init(void)
     cl_joytouchpadpressure = Cvar_Get("cl_joytouchpadpressure", "0.01", CVAR_ARCHIVE);
     cl_joytouchpadsplit = Cvar_Get("cl_joytouchpadsplit", "1", CVAR_ARCHIVE);
     cl_joytouchpadsplit->changed = cl_joytouchpadsplit_changed;
+
+    cl_joydamageblendled = Cvar_Get("cl_joydamageblendled", "1", CVAR_ARCHIVE);
 
     if (gamepad.initialized)
         return;
@@ -454,6 +458,14 @@ void Gamepad_Frame(void)
                    &gamepad.emulatedkeytimer[5]);
 
     gamepad.axisstate = newaxisstate;
+
+    if (cl_joydamageblendled->integer) {
+        float   scale = cl.frame.ps.damage_blend[3] * 255;
+        uint8_t r = Q_clip_uint8(cl.frame.ps.damage_blend[0] * scale);
+        uint8_t g = Q_clip_uint8(cl.frame.ps.damage_blend[1] * scale);
+        uint8_t b = Q_clip_uint8(cl.frame.ps.damage_blend[2] * scale);
+        SDL_SetGamepadLED(gamepad.ptr, r, g, b);
+    }
 }
 
 /*
