@@ -413,6 +413,7 @@ end
 
 begin gamepad
     title "Gamepad Setup"
+    info --default "(none)" "connected gamepad" "$in_gamepad"
     toggle "enable gamepad" in_joystick
     blank
     bindgp "attack" +attack
