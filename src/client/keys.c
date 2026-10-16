@@ -308,12 +308,12 @@ const char *Key_KeynumToString(int keynum)
 
 /*
 ===================
-Key_SetBinding
+Key_LabelForBinding
 
 Returns the name of the first key found.
 ===================
 */
-const char *Key_GetBinding(const char *binding)
+const char *Key_LabelForBinding(const char *binding)
 {
     int key;
 
