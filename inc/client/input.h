@@ -71,6 +71,7 @@ bool Gamepad_GetMoveLook(gamepad_2dinput_t *move, gamepad_2dinput_t *look);
 bool Gamepad_GetWheelLook(gamepad_wheel_look_source_t source, gamepad_2dinput_t *look);
 
 const char *Gamepad_Name(void);
+bool Gamepad_HasTouchpad(void);
 #else // USE_GAMEPAD
 #define Gamepad_Init()             (void)0
 #define Gamepad_Shutdown()         (void)0
@@ -78,4 +79,5 @@ const char *Gamepad_Name(void);
 #define Gamepad_GetMoveLook(M, L)  (false)
 #define Gamepad_GetWheelLook(S, L) (false)
 #define Gamepad_Name()             (NULL)
+#define Gamepad_HasTouchpad()      (false)
 #endif // USE_GAMEPAD

@@ -568,3 +568,10 @@ const char *Gamepad_Name(void)
         return NULL;
     return SDL_GetGamepadName(gamepad.ptr);
 }
+
+bool Gamepad_HasTouchpad(void)
+{
+    if (!gamepad.ptr)
+        return false;
+    return SDL_GetNumGamepadTouchpads(gamepad.ptr) > 0;
+}

@@ -2338,6 +2338,11 @@ static size_t IN_Gamepad_m(char* buffer, size_t size)
     return Q_strlcpy(buffer, gamepad, size);
 }
 
+static size_t IN_GamepadHasTouchpad_m(char* buffer, size_t size)
+{
+    return Q_strlcpy(buffer, Gamepad_HasTouchpad() ? "yes" : "no", size);
+}
+
 /*
 ===============
 CL_WriteConfig
@@ -2877,6 +2882,7 @@ static void CL_InitLocal(void)
     Cmd_AddMacro("cl_surface", CL_Surface_m);
 
     Cmd_AddMacro("in_gamepad", IN_Gamepad_m);
+    Cmd_AddMacro("in_gamepad_has_touchpad", IN_GamepadHasTouchpad_m);
 }
 
 static const cmdreg_t c_ignores[] = {
