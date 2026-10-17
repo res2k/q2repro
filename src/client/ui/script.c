@@ -677,6 +677,45 @@ static void Parse_Info(menuFrameWork_t *menu)
     Menu_AddItem(menu, i);
 }
 
+static void Parse_Text(menuFrameWork_t *menu)
+{
+    static const cmd_option_t o_text[] = {
+        { "c:", "color" },
+        { NULL }
+    };
+    menuStatic_t *s;
+    int c;
+    bool          has_custom_color = false;
+    color_t       custom_color = COLOR_WHITE;
+
+    while ((c = Cmd_ParseOptions(o_text)) != -1) {
+        switch (c) {
+        case 'c':
+            SCR_ParseColor(cmd_optarg, &custom_color);
+            has_custom_color = true;
+            break;
+        default:
+            return;
+        }
+    }
+
+    if (Cmd_Argc() - cmd_optind < 1) {
+        Com_Printf("Usage: %s <string>\n", Cmd_Argv(0));
+        return;
+    }
+
+    s = UI_Mallocz(sizeof(*s));
+    s->generic.type = MTYPE_STATIC;
+    s->generic.name = UI_CopyString(Cmd_Argv(cmd_optind));
+    s->generic.uiFlags = UI_CENTER;
+    if (has_custom_color) {
+        s->generic.color = custom_color;
+        s->generic.flags |= QMF_CUSTOM_COLOR;
+    }
+
+    Menu_AddItem(menu, s);
+}
+
 static void Parse_Background(menuFrameWork_t *menu)
 {
     char *s = Cmd_Argv(1);
@@ -864,6 +903,8 @@ static bool Parse_File(const char *path, int depth)
                     Parse_UnitSelector(menu);
                 } else if (!strcmp(cmd, "info")) {
                     Parse_Info(menu);
+                } else if (!strcmp(cmd, "text")) {
+                    Parse_Text(menu);
                 } else {
                     Com_WPrintf("Unknown keyword '%s'\n", cmd);
                 }
