@@ -1,0 +1,6 @@
+// Gamepad configuration when no gamepad support is available
+
+begin gamepad
+    title "Gamepad Setup"
+    text --color "#ffff80" "This build of Q2REPRO does not support gamepads."
+end

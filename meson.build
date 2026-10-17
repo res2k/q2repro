@@ -436,10 +436,8 @@ if sdl3.found()
   client_src += 'src/client/gamepad_sdl.c'
   client_src += 'src/unix/video/sdl.c'
   config.set('USE_SDL', 'USE_CLIENT')
-else
-  config.set('USE_SDL', '0')
 endif
-config.set('USE_GAMEPAD', 'USE_SDL')
+config.set('USE_GAMEPAD', config.get('USE_SDL', '0'))
 
 common_deps = [zlib]
 client_deps = [png, curl, sdl3]
@@ -586,6 +584,26 @@ if get_option('client-ui')
 
   client_src += ui_src
   config.set10('USE_UI', true)
+
+  # embed sub-menu for gamepad settings
+  # (note that in both cases the symbol is res_gamepad_menu)
+  if config.get('USE_GAMEPAD', '0') != '0'
+    gamepad_menu_c = custom_target(
+        'gamepad.menu.c',
+        output : 'gamepad.menu.c',
+        input : 'src/client/ui/gamepad.menu',
+        command : [prog_embed, '@INPUT@', '@OUTPUT@', 'res_gamepad_menu'],
+    )
+    client_src += gamepad_menu_c
+  else
+    gamepad_unavailable_menu_c = custom_target(
+        'gamepad_unavailable.menu.c',
+        output : 'gamepad_unavailable.menu.c',
+        input : 'src/client/ui/gamepad_unavailable.menu',
+        command : [prog_embed, '@INPUT@', '@OUTPUT@', 'res_gamepad_menu'],
+    )
+    client_src += gamepad_unavailable_menu_c
+  endif
 endif
 
 if get_option('software-sound').require(win32 or sdl3.found()).allowed()
@@ -773,7 +791,7 @@ summary({
   'debug'              : config.get('USE_DEBUG', 0) != 0,
   'game-abi-hack'      : config.get('USE_GAME_ABI_HACK', 0) != 0,
   'game-new-api'       : config.get('USE_NEW_GAME_API', 0) != 0,
-  'gamepad'            : config.get('USE_GAMEPAD', '') != '',
+  'gamepad'            : config.get('USE_GAMEPAD', '0') != '0',
   'icmp-errors'        : config.get('USE_ICMP', 0) != 0,
   'libcurl'            : config.get('USE_CURL', 0) != 0,
   'libjpeg'            : config.get('USE_JPG', 0) != 0,

@@ -66,11 +66,13 @@ typedef struct {
     extern const size_t res_##n##_size;
 
 FORWARD_EMBEDDED_FILE(q2pro_menu);
+FORWARD_EMBEDDED_FILE(gamepad_menu);
 FORWARD_EMBEDDED_FILE(q2reprodefault_cfg);
 
 static const builtin_file_t builtin_files[] = {
 #if USE_CLIENT
     { "q2repro.menu", res_q2pro_menu, &res_q2pro_menu_size },
+    { "gamepad.menu", res_gamepad_menu, &res_gamepad_menu_size },
 #endif
     { "q2reprodefault.cfg", res_q2reprodefault_cfg, &res_q2reprodefault_cfg_size },
     { NULL }
